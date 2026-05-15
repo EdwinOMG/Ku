@@ -3,7 +3,7 @@ import { AuthRequest } from '../types'
 import { supabase } from '../lib/supabase'
 
 export const getHashtag = async (req: AuthRequest, res: Response) => {
-  const { name } = req.params
+  const name = req.params.name as string
   const { page = 1 } = req.query
   const limit = 20
   const offset = (Number(page) - 1) * limit

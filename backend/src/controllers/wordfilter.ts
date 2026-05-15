@@ -37,7 +37,7 @@ export const addFilter = async (req: AuthRequest, res: Response) => {
 
 export const removeFilter = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
-  const { word } = req.params
+  const word = req.params.word as string
 
   const { error } = await supabase
     .from('word_filters')

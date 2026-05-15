@@ -191,10 +191,10 @@ export const getKu = async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id
 
   const { data: ku, error } = await supabase
-    .from('kus')
-    .select('*, users(username, avatar_url)')
-    .eq('id', id)
-    .single()
+  .from('kus')
+  .select('*, users(username, avatar_url)')
+  .eq('id', id)
+  .single()
 
   if (error || !ku) return res.status(404).json({ error: 'Ku not found' })
 

@@ -44,10 +44,10 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
   // Get kus based on relationship
   let kuQuery = supabase
-    .from('kus')
-    .select('*')
-    .eq('user_id', profile.id)
-    .order('created_at', { ascending: false })
+  .from('kus')
+  .select('*, users(username, avatar_url)')
+  .eq('user_id', profile.id)
+  .order('created_at', { ascending: false })
 
   if (isOwner) {
     // See all your own kus
@@ -62,7 +62,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
   // Get open writes based on relationship
   let openWriteQuery = supabase
     .from('open_writes')
-    .select('*')
+    .select('*, users(username, avatar_url)')
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false })
 

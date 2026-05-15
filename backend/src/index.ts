@@ -7,19 +7,11 @@ import kuRoutes from './routes/kus'
 import followRoutes from './routes/follows'
 import likeRoutes from './routes/likes'
 import commentRoutes from './routes/comments'
-import express from 'express'
-import cors from 'cors'
-import dotenv from 'dotenv'
-import authRoutes from './routes/auth'
-import userRoutes from './routes/users'
-import kuRoutes from './routes/kus'
-import followRoutes from './routes/follows'
-import likeRoutes from './routes/likes'
-import commentRoutes from './routes/comments'
 import collectionRoutes from './routes/collections'
 import hashtagRoutes from './routes/hashtags'
 import reportRoutes from './routes/reports'
 import wordFilterRoutes from './routes/wordfilter'
+
 
 
 dotenv.config()
