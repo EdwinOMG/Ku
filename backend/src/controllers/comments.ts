@@ -1,6 +1,7 @@
 import { Response } from 'express'
 import { AuthRequest } from '../types'
 import { supabase } from '../lib/supabase'
+import { createNotification } from '../lib/notify'
 
 export const getComments = async (req: AuthRequest, res: Response) => {
   const { kuId } = req.params
@@ -18,7 +19,7 @@ export const getComments = async (req: AuthRequest, res: Response) => {
 
 export const addComment = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
-  const { kuId } = req.params
+  const kuId = req.params.kuId as string
   const { content } = req.body
 
   if (!content || content.trim().length === 0) {
@@ -29,6 +30,12 @@ export const addComment = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Comment cannot exceed 280 characters' })
   }
 
+  const { data: ku } = await supabase
+    .from('kus')
+    .select('user_id')
+    .eq('id', kuId)
+    .single()
+
   const { data: comment, error } = await supabase
     .from('comments')
     .insert({ user_id: userId, ku_id: kuId, content })
@@ -36,6 +43,16 @@ export const addComment = async (req: AuthRequest, res: Response) => {
     .single()
 
   if (error) return res.status(400).json({ error: error.message })
+
+  if (ku) {
+    await createNotification({
+      userId: ku.user_id,
+      actorId: userId,
+      type: 'comment',
+      kuId,
+      commentId: comment.id
+    })
+  }
 
   return res.status(201).json({ comment })
 }

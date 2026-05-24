@@ -37,22 +37,47 @@ export default function Settings() {
   }, [user])
 
   const handleSave = async () => {
-    if (!session) return
-    setLoading(true)
-    setError('')
-    setSuccess(false)
-    try {
-      await api('/users/profile', {
-        method: 'PUT',
-        body: JSON.stringify({ username, bio, avatar_url: avatarUrl })
-      }, session.access_token)
-      setSuccess(true)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+  if (!session || !user) return
+  setLoading(true)
+  setError('')
+  setSuccess(false)
+
+  try {
+    let finalAvatarUrl = avatarUrl
+
+    // if it's a base64 upload, push to Supabase storage first
+    if (avatarUrl.startsWith('data:')) {
+      const res = await fetch(avatarUrl)
+      const blob = await res.blob()
+      const ext = blob.type === 'image/png' ? 'png' : 'jpg'
+      const fileName = `${user.id}/avatar.${ext}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, blob, { contentType: blob.type, upsert: true })
+
+      if (uploadError) throw new Error(uploadError.message)
+
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName)
+
+      finalAvatarUrl = urlData.publicUrl
     }
+
+    await api('/users/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ username, bio, avatar_url: finalAvatarUrl })
+    }, session.access_token)
+
+    setAvatarUrl(finalAvatarUrl)
+    setSuccess(true)
+  } catch (err: any) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleLogout = async () => {
     await logout()

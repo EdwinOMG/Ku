@@ -30,11 +30,12 @@ export const register = async (req: Request, res: Response) => {
 
   // Create public profile
   const { error: profileError } = await supabase
-    .from('users')
-    .insert({
-      id: data.user.id,
-      username
-    })
+  .from('users')
+  .insert({
+    id: data.user.id,
+    username,
+    avatar_url: '/icons/avatar-1.svg'
+  })
 
   if (profileError) return res.status(400).json({ error: profileError.message })
 

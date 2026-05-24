@@ -14,6 +14,7 @@ import wordFilterRoutes from './routes/wordfilter'
 import searchRoutes from './routes/search'
 import openWriteRoutes from './routes/openwrites'
 import promptRoutes from './routes/prompts'
+import notificationRoutes from './routes/notifications'
 
 dotenv.config()
 
@@ -36,6 +37,7 @@ app.use('/wordfilter', wordFilterRoutes)
 app.use('/search', searchRoutes)
 app.use('/openwrites', openWriteRoutes)
 app.use('/prompts', promptRoutes)
+app.use('/notifications', notificationRoutes)
 
 
 app.get('/health', (req, res) => {

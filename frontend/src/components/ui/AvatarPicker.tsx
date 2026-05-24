@@ -1,56 +1,63 @@
+import { useRef } from 'react'
+
 interface AvatarPickerProps {
   current?: string
   onSelect: (url: string) => void
 }
 
-const PRESET_ICONS = [
-  '/icons/avatar-1.svg',
-  '/icons/avatar-2.svg',
-  '/icons/avatar-3.svg',
-  '/icons/avatar-4.svg',
-  '/icons/avatar-5.svg',
-  '/icons/avatar-6.svg',
-  '/icons/avatar-7.svg',
-  '/icons/avatar-8.svg',
-]
-
-const PLACEHOLDER_COLORS = [
-  '#FAEEDA',
-  '#E8E3D8',
-  '#E1F5EE',
-  '#E6F1FB',
-  '#FBEAF0',
-  '#EAF3DE',
-  '#FAECE7',
-  '#EEEDFE',
-]
+const DEFAULT_AVATAR = '/icons/avatar-1.svg'
 
 export default function AvatarPicker({ current, onSelect }: AvatarPickerProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image must be under 2MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      onSelect(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-ink-muted">choose a profile icon</p>
-      <div className="grid grid-cols-4 gap-3">
-        {PRESET_ICONS.map((icon, i) => (
-          <button
-            key={icon}
-            onClick={() => onSelect(icon)}
-            className={`aspect-square rounded-full border-2 overflow-hidden flex items-center justify-center ${
-              current === icon ? 'border-amber-warm' : 'border-transparent'
-            }`}
-            style={{ background: PLACEHOLDER_COLORS[i] }}
-          >
-            <img
-              src={icon}
-              alt={`avatar ${i + 1}`}
-              className="w-full h-full object-cover"
-              onError={e => {
-                (e.target as HTMLImageElement).style.display = 'none'
-              }}
-            />
-          </button>
-        ))}
+      <p className="text-xs text-ink-muted">choose a profile picture</p>
+
+      <div className="flex flex-col gap-2">
+        <p className="text-xs text-ink-faint">default</p>
+        <button
+          onClick={() => onSelect(DEFAULT_AVATAR)}
+          className={`w-14 h-14 rounded-full border-2 overflow-hidden ${
+            current === DEFAULT_AVATAR ? 'border-amber-warm' : 'border-transparent'
+          }`}
+        >
+          <img src={DEFAULT_AVATAR} alt="default avatar" className="w-full h-full object-cover" />
+        </button>
       </div>
-      <p className="text-xs text-ink-faint">more icons coming soon</p>
+
+      <div className="flex flex-col gap-2">
+        <p className="text-xs text-ink-faint">or upload your own</p>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-paper-bg border border-paper-border rounded-lg px-4 py-2 text-xs text-ink-secondary text-left"
+        >
+          choose image (jpg, png, max 2MB)
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
     </div>
   )
 }

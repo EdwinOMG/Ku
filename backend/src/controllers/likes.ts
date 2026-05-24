@@ -1,14 +1,16 @@
 import { Response } from 'express'
 import { AuthRequest } from '../types'
 import { supabase } from '../lib/supabase'
+import { createNotification } from '../lib/notify'
 
 export const likeKu = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
-  const { kuId } = req.params
+  const kuId = req.params.kuId as string
+
 
   const { data: ku } = await supabase
     .from('kus')
-    .select('id')
+    .select('id, user_id')
     .eq('id', kuId)
     .single()
 
@@ -19,6 +21,13 @@ export const likeKu = async (req: AuthRequest, res: Response) => {
     .insert({ user_id: userId, ku_id: kuId })
 
   if (error) return res.status(400).json({ error: error.message })
+
+  await createNotification({
+    userId: ku.user_id,
+    actorId: userId,
+    type: 'like',
+    kuId
+  })
 
   return res.status(200).json({ message: 'Liked' })
 }
