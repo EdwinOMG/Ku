@@ -12,6 +12,7 @@ import KuPage from './pages/KuPage'
 import Collections from './pages/collections/Collections'
 import CollectionPage from './pages/collections/CollectionPage'
 import Search from './pages/Search'
+import WordFilter from './pages/WordFilter'
 
 
 
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/collections" element={user ? <Collections /> : <Navigate to="/login" />} />
         <Route path="/collections/:id" element={<CollectionPage />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/settings/filters" element={user ? <WordFilter /> : <Navigate to="/login" />} />
 
       </Routes>
     </div>

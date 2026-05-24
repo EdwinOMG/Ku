@@ -15,7 +15,7 @@ const validateKu = (line1: string, line2: string, line3: string) => {
 
 export const createKu = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
-  const { line1, line2, line3, visibility, hashtags, is_daily, prompt_id } = req.body
+  const { line1, line2, line3, visibility, hashtags, is_daily, prompt_id, sketch_url } = req.body
 
   const validationError = validateKu(line1, line2, line3)
   if (validationError) return res.status(400).json({ error: validationError })
@@ -34,7 +34,8 @@ export const createKu = async (req: AuthRequest, res: Response) => {
       line3,
       visibility,
       is_daily: is_daily || false,
-      prompt_id: prompt_id || null
+      prompt_id: prompt_id || null,
+      sketch_url: sketch_url || null
     })
     .select()
     .single()
