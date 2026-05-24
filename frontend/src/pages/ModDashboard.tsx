@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import Layout from '../components/layout/Layout'
 import TopBar from '../components/layout/TopBar'
-import { useNavigate } from 'react-router-dom'
 
 interface Report {
   id: string
@@ -124,7 +123,7 @@ export default function ModDashboard() {
             </div>
         )}
         </div>
-        
+
       <div className="flex border-b border-paper-border bg-paper-nav">
         {(['pending', 'reviewed', 'dismissed'] as const).map(t => (
           <button
