@@ -21,12 +21,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [user])
 
   const navItems = [
-    { path: '/home', icon: '⌂', label: 'home' },
-    { path: '/explore', icon: '◎', label: 'explore' },
-    { path: '/daily', icon: '☀', label: 'daily' },
-    { path: '/collections', icon: '⊞', label: 'collections' },
-    { path: `/profile/${username}`, icon: '◯', label: 'profile' },
-  ]
+  { path: '/home', icon: '⌂', label: 'home' },
+  { path: '/explore', icon: '◎', label: 'explore' },
+  { path: '/daily', icon: '☀', label: 'daily' },
+  { path: '/search', icon: '⌕', label: 'search' },
+  { path: `/profile/${username}`, icon: '◯', label: 'profile' },
+]
 
   return (
     <div className="min-h-screen bg-paper-bg flex flex-col max-w-lg mx-auto">

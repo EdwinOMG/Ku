@@ -63,7 +63,10 @@ export default function Profile() {
   const [tab, setTab] = useState<Tab>('kus')
   const [loading, setLoading] = useState(true)
   const [following, setFollowing] = useState(false)
-
+  const [showCreateCollection, setShowCreateCollection] = useState(false)
+  const [newCollectionName, setNewCollectionName] = useState('')
+  const [newCollectionVisibility, setNewCollectionVisibility] = useState('private')
+  const [creatingCollection, setCreatingCollection] = useState(false)
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true)
@@ -119,6 +122,27 @@ export default function Profile() {
     </Layout>
   )
 
+  const handleCreateCollection = async () => {
+  if (!session || !newCollectionName.trim()) return
+  setCreatingCollection(true)
+  try {
+    const data = await api('/collections', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: newCollectionName,
+        visibility: newCollectionVisibility
+      })
+    }, session.access_token)
+    setCollections(prev => [data.collection, ...prev])
+    setNewCollectionName('')
+    setNewCollectionVisibility('private')
+    setShowCreateCollection(false)
+  } catch (err) {
+    console.error(err)
+  } finally {
+    setCreatingCollection(false)
+  }
+}
   return (
     <Layout>
       <TopBar
@@ -216,15 +240,70 @@ export default function Profile() {
         )}
 
         {tab === 'collections' && (
-          collections.length === 0
-            ? <p className="text-center text-ink-muted text-sm py-8">no collections yet</p>
-            : collections.map(col => (
-                <div key={col.id} className="bg-paper-card border border-paper-border rounded-card p-4">
-                  <p className="text-sm font-medium text-ink">{col.name}</p>
-                  <p className="text-xs text-ink-faint mt-1">{col.visibility}</p>
+      <div className="flex flex-col gap-3">
+        {profile.isOwner && (
+          <div className="bg-paper-card border border-paper-border rounded-card p-4">
+            {showCreateCollection ? (
+              <div className="flex flex-col gap-3">
+                <input
+                  type="text"
+                  value={newCollectionName}
+                  onChange={e => setNewCollectionName(e.target.value)}
+                  placeholder="collection name..."
+                  className="bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
+                />
+                <select
+                  value={newCollectionVisibility}
+                  onChange={e => setNewCollectionVisibility(e.target.value)}
+                  className="bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
+                >
+                  <option value="private">private</option>
+                  <option value="friends">friends only</option>
+                  <option value="public">public</option>
+                </select>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCreateCollection}
+                    disabled={creatingCollection || !newCollectionName.trim()}
+                    className="flex-1 bg-amber-warm text-paper-card rounded-lg py-2 text-sm font-medium disabled:opacity-50"
+                  >
+                    {creatingCollection ? 'creating...' : 'create'}
+                  </button>
+                  <button
+                    onClick={() => setShowCreateCollection(false)}
+                    className="text-xs text-ink-muted px-3"
+                  >
+                    cancel
+                  </button>
                 </div>
-              ))
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowCreateCollection(true)}
+                className="text-xs text-amber-warm w-full text-left"
+              >
+                + new collection
+              </button>
+            )}
+          </div>
         )}
+
+        {collections.length === 0 && (
+          <p className="text-center text-ink-muted text-sm py-8">no collections yet</p>
+        )}
+
+        {collections.map(col => (
+          <button
+            key={col.id}
+            onClick={() => navigate(`/collections/${col.id}`)}
+            className="bg-paper-card border border-paper-border rounded-card p-4 text-left w-full"
+          >
+            <p className="text-sm font-medium text-ink">{col.name}</p>
+            <p className="text-xs text-ink-faint mt-1">{col.visibility}</p>
+          </button>
+        ))}
+      </div>
+    )}
       </div>
     </Layout>
   )

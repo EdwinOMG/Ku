@@ -11,8 +11,7 @@ import collectionRoutes from './routes/collections'
 import hashtagRoutes from './routes/hashtags'
 import reportRoutes from './routes/reports'
 import wordFilterRoutes from './routes/wordfilter'
-
-
+import searchRoutes from './routes/search'
 
 dotenv.config()
 
@@ -32,6 +31,8 @@ app.use('/collections', collectionRoutes)
 app.use('/hashtags', hashtagRoutes)
 app.use('/reports', reportRoutes)
 app.use('/wordfilter', wordFilterRoutes)
+app.use('/search', searchRoutes)
+
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
