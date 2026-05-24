@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { api } from '../../lib/api'
+import ShareCard from './ShareCard'
+
 
 interface Ku {
   id: string
@@ -53,7 +55,7 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
   const [showCollect, setShowCollect] = useState(false)
   const [userCollections, setUserCollections] = useState<{ id: string, name: string }[]>([])
   const [collecting, setCollecting] = useState(false)
-
+  const [showShare, setShowShare] = useState(false)
   const isOwner = user?.id === ku.user_id
 
   const handleLike = async () => {
@@ -215,6 +217,18 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
         <div className="mt-3 border-t border-paper-muted pt-3">
           <img src={ku.sketch_url} alt="sketch" className="w-full rounded-lg" />
         </div>
+      )}
+
+
+      <button
+        onClick={() => setShowShare(true)}
+        className="text-xs text-ink-faint"
+      >
+        ↗ share
+      </button>
+
+      {showShare && (
+        <ShareCard ku={ku} onClose={() => setShowShare(false)} />
       )}
     </div>
   )
