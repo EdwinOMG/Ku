@@ -13,6 +13,9 @@ import Collections from './pages/collections/Collections'
 import CollectionPage from './pages/collections/CollectionPage'
 import Search from './pages/Search'
 import WordFilter from './pages/WordFilter'
+import ComposeOpenWrite from './pages/ComposeOpenWrite'
+import OpenWritePage from './pages/OpenWritePage'
+import HashtagFeed from './pages/HashtagFeed'
 
 
 
@@ -36,7 +39,6 @@ export default function App() {
         <Route path="/explore" element={<ExploreFeed />} />
         <Route path="/daily" element={<DailyFeed />} />
         <Route path="/profile/:username" element={<Profile />} />
-        <Route path="/hashtag/:tag" element={<ExploreFeed />} />
         <Route path="/compose" element={user ? <Compose /> : <Navigate to="/login" />} />
         <Route path="/settings" element={user ? <Settings /> : <Navigate to="/login" />} />
         <Route path="/ku/:id" element={<KuPage />} />
@@ -44,7 +46,9 @@ export default function App() {
         <Route path="/collections/:id" element={<CollectionPage />} />
         <Route path="/search" element={<Search />} />
         <Route path="/settings/filters" element={user ? <WordFilter /> : <Navigate to="/login" />} />
-
+        <Route path="/write" element={user ? <ComposeOpenWrite /> : <Navigate to="/login" />} />
+        <Route path="/write/:id" element={<OpenWritePage />} />
+        <Route path="/hashtag/:tag" element={<HashtagFeed />} />
       </Routes>
     </div>
   )

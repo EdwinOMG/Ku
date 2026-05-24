@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { api } from '../../lib/api'
@@ -57,6 +57,20 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
   const [collecting, setCollecting] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const isOwner = user?.id === ku.user_id
+  const [hashtags, setHashtags] = useState<string[]>(ku.hashtags || [])
+
+  useEffect(() => {
+    if (ku.hashtags && ku.hashtags.length > 0) return
+    const fetchHashtags = async () => {
+      try {
+        const data = await api(`/kus/${ku.id}`, {}, session?.access_token)
+        setHashtags(data.ku.hashtags || [])
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchHashtags()
+  }, [ku.id])
 
   const handleLike = async () => {
     if (!session) return
@@ -156,9 +170,9 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
         <p className="text-sm text-ink leading-relaxed">{ku.line3}</p>
       </div>
 
-      {ku.hashtags && ku.hashtags.length > 0 && (
+      {hashtags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
-          {ku.hashtags.map(tag => (
+          {hashtags.map(tag => (
             <Link
               key={tag}
               to={`/hashtag/${tag}`}
@@ -184,10 +198,7 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
           ◎ comment
         </Link>
         <div className="relative ml-auto">
-          <button
-            onClick={handleCollect}
-            className="text-xs text-ink-faint"
-          >
+          <button onClick={handleCollect} className="text-xs text-ink-faint">
             ⊕ collect
           </button>
           {showCollect && (
@@ -208,7 +219,7 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
             </div>
           )}
         </div>
-        <button className="text-xs text-ink-faint">
+        <button onClick={() => setShowShare(true)} className="text-xs text-ink-faint">
           ↗ share
         </button>
       </div>
@@ -218,14 +229,6 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
           <img src={ku.sketch_url} alt="sketch" className="w-full rounded-lg" />
         </div>
       )}
-
-
-      <button
-        onClick={() => setShowShare(true)}
-        className="text-xs text-ink-faint"
-      >
-        ↗ share
-      </button>
 
       {showShare && (
         <ShareCard ku={ku} onClose={() => setShowShare(false)} />

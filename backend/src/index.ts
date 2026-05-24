@@ -12,6 +12,7 @@ import hashtagRoutes from './routes/hashtags'
 import reportRoutes from './routes/reports'
 import wordFilterRoutes from './routes/wordfilter'
 import searchRoutes from './routes/search'
+import openWriteRoutes from './routes/openwrites'
 
 dotenv.config()
 
@@ -32,6 +33,7 @@ app.use('/hashtags', hashtagRoutes)
 app.use('/reports', reportRoutes)
 app.use('/wordfilter', wordFilterRoutes)
 app.use('/search', searchRoutes)
+app.use('/openwrites', openWriteRoutes)
 
 
 app.get('/health', (req, res) => {

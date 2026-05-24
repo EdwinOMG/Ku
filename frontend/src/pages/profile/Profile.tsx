@@ -229,14 +229,31 @@ export default function Profile() {
         )}
 
         {tab === 'writes' && (
-          openWrites.length === 0
-            ? <p className="text-center text-ink-muted text-sm py-8">no open writes yet</p>
-            : openWrites.map(write => (
-                <div key={write.id} className="bg-paper-card border border-paper-border rounded-card p-4">
-                  <p className="text-sm text-ink leading-relaxed">{write.content}</p>
-                  <p className="text-xs text-ink-faint mt-2">{write.visibility}</p>
-                </div>
-              ))
+          <div className="flex flex-col gap-3">
+            {profile.isOwner && (
+              <button
+                onClick={() => navigate('/write')}
+                className="bg-paper-card border border-paper-border rounded-card p-4 text-xs text-amber-warm text-left"
+              >
+                + new open write
+              </button>
+            )}
+
+            {openWrites.length === 0 && (
+              <p className="text-center text-ink-muted text-sm py-8">no open writes yet</p>
+            )}
+
+            {openWrites.map(write => (
+              <div
+                key={write.id}
+                className="bg-paper-card border border-paper-border rounded-card p-4 cursor-pointer"
+                onClick={() => navigate(`/write/${write.id}`)}
+              >
+                <p className="text-sm text-ink leading-relaxed line-clamp-3">{write.content}</p>
+                <p className="text-xs text-ink-faint mt-2">{write.visibility}</p>
+              </div>
+            ))}
+          </div>
         )}
 
         {tab === 'collections' && (

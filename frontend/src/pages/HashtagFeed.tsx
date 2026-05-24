@@ -1,0 +1,98 @@
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { api } from '../lib/api'
+import Layout from '../components/layout/Layout'
+import TopBar from '../components/layout/TopBar'
+import KuCard from '../components/ku/KuCard'
+
+interface Ku {
+  id: string
+  user_id: string
+  line1: string
+  line2: string
+  line3: string
+  visibility: string
+  sketch_url?: string
+  created_at: string
+  users: {
+    username: string
+    avatar_url?: string
+  }
+  likeCount?: number
+  hashtags?: string[]
+  isLiked?: boolean
+}
+
+export default function HashtagFeed() {
+  const { tag } = useParams<{ tag: string }>()
+  const { session } = useAuth()
+  const [kus, setKus] = useState<Ku[]>([])
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+
+  const fetchKus = async (pageNum: number) => {
+    try {
+        const data = await api(
+        `/hashtags/${tag}?page=${pageNum}`,
+        {},
+        session?.access_token
+        )
+        console.log('hashtag data:', data)
+        const flatKus = data.kus?.map((k: any) => k.kus || k) || []
+        if (pageNum === 1) {
+        setKus(flatKus)
+        } else {
+        setKus(prev => [...prev, ...flatKus])
+        }
+        setHasMore(flatKus.length === 20)
+    } catch (err) {
+        console.error(err)
+    } finally {
+        setLoading(false)
+    }
+    }
+
+  useEffect(() => {
+  console.log('tag:', tag)
+  if (tag) fetchKus(1)
+}, [tag])
+
+  const loadMore = () => {
+    const next = page + 1
+    setPage(next)
+    fetchKus(next)
+  }
+
+  return (
+    <Layout>
+      <TopBar title={`#${tag}`} showBack />
+
+      <div className="p-3 flex flex-col gap-3">
+        {loading && (
+          <p className="text-center text-ink-muted text-sm py-8">loading...</p>
+        )}
+
+        {!loading && kus.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-ink-muted text-sm">no kus with #{tag} yet</p>
+          </div>
+        )}
+
+        {kus.map(ku => (
+          <KuCard key={ku.id} ku={ku} />
+        ))}
+
+        {hasMore && !loading && kus.length > 0 && (
+          <button
+            onClick={loadMore}
+            className="text-xs text-ink-muted text-center py-4"
+          >
+            load more
+          </button>
+        )}
+      </div>
+    </Layout>
+  )
+}
