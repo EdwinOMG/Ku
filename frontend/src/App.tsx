@@ -17,6 +17,7 @@ import ComposeOpenWrite from './pages/ComposeOpenWrite'
 import OpenWritePage from './pages/OpenWritePage'
 import HashtagFeed from './pages/HashtagFeed'
 import ModDashboard from './pages/ModDashboard'
+import Notifications from './pages/Notifications'
 
 
 
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/write/:id" element={<OpenWritePage />} />
         <Route path="/hashtag/:tag" element={<HashtagFeed />} />
         <Route path="/mod" element={user ? <ModDashboard /> : <Navigate to="/login" />} />
+        <Route path="/notifications" element={user ? <Notifications /> : <Navigate to="/login" />} />
 
       </Routes>
     </div>
