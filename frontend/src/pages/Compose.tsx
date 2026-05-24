@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
@@ -26,12 +26,19 @@ function dataURLtoBlob(dataUrl: string): Blob {
 export default function Compose() {
   const { session, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [lines, setLines] = useState(['', '', ''])
   const [hashtags, setHashtags] = useState('')
   const [visibility, setVisibility] = useState('public')
   const [sketchDataUrl, setSketchDataUrl] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const promptState = location.state as {
+    promptId?: string
+    promptWord?: string
+    isDaily?: boolean
+  } | null
 
   const handleLineChange = (index: number, value: string) => {
     const wordCount = countWords(value)
@@ -41,23 +48,17 @@ export default function Compose() {
     setLines(updated)
   }
 
- const uploadSketch = async (): Promise<string | null> => {
-  if (!sketchDataUrl || !user) {
-    console.log('no sketch data or user', { sketchDataUrl, user })
-    return null
+  const uploadSketch = async (): Promise<string | null> => {
+    if (!sketchDataUrl || !user) return null
+    const blob = dataURLtoBlob(sketchDataUrl)
+    const fileName = `${user.id}/${Date.now()}.png`
+    const { error } = await supabase.storage
+      .from('sketches')
+      .upload(fileName, blob, { contentType: 'image/png', upsert: false })
+    if (error) return null
+    const { data: urlData } = supabase.storage.from('sketches').getPublicUrl(fileName)
+    return urlData.publicUrl
   }
-  const blob = dataURLtoBlob(sketchDataUrl)
-  const fileName = `${user.id}/${Date.now()}.png`
-  console.log('uploading sketch:', fileName)
-  const { error, data } = await supabase.storage
-    .from('sketches')
-    .upload(fileName, blob, { contentType: 'image/png', upsert: false })
-  console.log('upload result:', { error, data })
-  if (error) return null
-  const { data: urlData } = supabase.storage.from('sketches').getPublicUrl(fileName)
-  console.log('public url:', urlData.publicUrl)
-  return urlData.publicUrl
-}
 
   const handleSubmit = async () => {
     if (!session) return
@@ -85,11 +86,13 @@ export default function Compose() {
           line3: lines[2],
           visibility,
           hashtags: parsedTags,
-          sketch_url: sketchUrl
+          sketch_url: sketchUrl,
+          is_daily: promptState?.isDaily || false,
+          prompt_id: promptState?.promptId || null
         })
       }, session.access_token)
 
-      navigate('/home')
+      navigate('/daily')
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -100,7 +103,7 @@ export default function Compose() {
   return (
     <div className="min-h-screen bg-paper-bg max-w-lg mx-auto">
       <TopBar
-        title="write a ku"
+        title={promptState?.promptWord ? `prompt: ${promptState.promptWord}` : 'write a ku'}
         showBack
         right={
           <button
@@ -115,6 +118,14 @@ export default function Compose() {
 
       <div className="p-4 flex flex-col gap-4">
         <div className="bg-paper-card border border-paper-border rounded-card p-5">
+
+          {promptState?.promptWord && (
+            <div className="bg-amber-light rounded-lg px-3 py-2 mb-4 text-center">
+              <p className="text-xs text-ink-muted">writing for today's prompt</p>
+              <p className="text-sm font-medium text-amber-warm">{promptState.promptWord}</p>
+            </div>
+          )}
+
           <p className="text-xs text-ink-faint mb-4 text-center">5 · 7 · 5 words per line</p>
 
           {lines.map((line, i) => (

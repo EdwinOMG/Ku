@@ -5,6 +5,7 @@ import Layout from '../../components/layout/Layout'
 import TopBar from '../../components/layout/TopBar'
 import KuCard from '../../components/ku/KuCard'
 import { useWordFilter } from '../../hooks/useWordFilter'
+import { useNavigate } from 'react-router-dom'
 
 interface Ku {
   id: string
@@ -36,6 +37,8 @@ export default function DailyFeed() {
   const [prompt, setPrompt] = useState<Prompt | null>(null)
   const [loading, setLoading] = useState(true)
   const { filterKus } = useWordFilter()
+  const navigate = useNavigate()
+  const { user } = useAuth()
 
   useEffect(() => {
     const fetchDaily = async () => {
@@ -63,7 +66,17 @@ export default function DailyFeed() {
       {prompt && (
         <div className="bg-paper-card border-b border-paper-border px-4 py-4 text-center">
           <p className="text-xs text-ink-muted mb-1">today's prompt</p>
-          <p className="text-2xl text-ink font-medium">{prompt.prompt}</p>
+          <p className="text-2xl text-ink font-medium mb-3">{prompt.prompt}</p>
+          {user && (
+            <button
+              onClick={() => navigate('/compose', {
+                state: { promptId: prompt.id, promptWord: prompt.prompt, isDaily: true }
+              })}
+              className="bg-amber-warm text-paper-card rounded-full px-5 py-1.5 text-xs font-medium"
+            >
+              write for this prompt
+            </button>
+          )}
         </div>
       )}
 
