@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext'
 import { api } from '../../lib/api'
 import ShareCard from './ShareCard'
 
-
 interface Ku {
   id: string
   user_id: string
@@ -56,8 +55,12 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
   const [userCollections, setUserCollections] = useState<{ id: string, name: string }[]>([])
   const [collecting, setCollecting] = useState(false)
   const [showShare, setShowShare] = useState(false)
-  const isOwner = user?.id === ku.user_id
+  const [showReport, setShowReport] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reporting, setReporting] = useState(false)
   const [hashtags, setHashtags] = useState<string[]>(ku.hashtags || [])
+
+  const isOwner = user?.id === ku.user_id
 
   useEffect(() => {
     if (ku.hashtags && ku.hashtags.length > 0) return
@@ -128,6 +131,26 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
     }
   }
 
+  const handleReport = async () => {
+    if (!session || !reportReason.trim()) return
+    setReporting(true)
+    try {
+      await api('/reports', {
+        method: 'POST',
+        body: JSON.stringify({
+          reported_ku_id: ku.id,
+          reason: reportReason
+        })
+      }, session.access_token)
+      setShowReport(false)
+      setReportReason('')
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setReporting(false)
+    }
+  }
+
   return (
     <div className="bg-paper-card border border-paper-border rounded-card p-4">
       <div className="flex items-center gap-2 mb-3">
@@ -142,7 +165,7 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
           </Link>
         )}
         <span className="text-xs text-ink-faint ml-auto">{timeAgo(ku.created_at)}</span>
-        {isOwner && (
+        {isOwner ? (
           <div className="relative">
             <button
               onClick={() => setShowMenu(s => !s)}
@@ -161,7 +184,29 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
               </div>
             )}
           </div>
-        )}
+        ) : session ? (
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(s => !s)}
+              className="text-ink-faint text-xs px-1"
+            >
+              ···
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-5 bg-paper-card border border-paper-border rounded-lg shadow-sm z-10 overflow-hidden">
+                <button
+                  onClick={() => {
+                    setShowMenu(false)
+                    setShowReport(true)
+                  }}
+                  className="block px-4 py-2 text-xs text-ink hover:bg-paper-muted w-full text-left"
+                >
+                  report
+                </button>
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       <div className="border-t border-b border-paper-muted py-3 mb-3">
@@ -227,6 +272,34 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
       {ku.sketch_url && (
         <div className="mt-3 border-t border-paper-muted pt-3">
           <img src={ku.sketch_url} alt="sketch" className="w-full rounded-lg" />
+        </div>
+      )}
+
+      {showReport && (
+        <div className="mt-3 border-t border-paper-muted pt-3 flex flex-col gap-2">
+          <p className="text-xs font-medium text-ink-secondary">report this ku</p>
+          <textarea
+            value={reportReason}
+            onChange={e => setReportReason(e.target.value)}
+            rows={2}
+            placeholder="reason for reporting..."
+            className="w-full bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-xs text-ink resize-none focus:outline-none focus:border-amber-mid"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={handleReport}
+              disabled={reporting || !reportReason.trim()}
+              className="flex-1 bg-amber-warm text-paper-card rounded-lg py-1.5 text-xs font-medium disabled:opacity-50"
+            >
+              {reporting ? 'reporting...' : 'submit report'}
+            </button>
+            <button
+              onClick={() => setShowReport(false)}
+              className="text-xs text-ink-muted px-3"
+            >
+              cancel
+            </button>
+          </div>
         </div>
       )}
 

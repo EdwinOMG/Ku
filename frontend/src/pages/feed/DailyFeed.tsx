@@ -4,6 +4,7 @@ import { api } from '../../lib/api'
 import Layout from '../../components/layout/Layout'
 import TopBar from '../../components/layout/TopBar'
 import KuCard from '../../components/ku/KuCard'
+import { useWordFilter } from '../../hooks/useWordFilter'
 
 interface Ku {
   id: string
@@ -34,6 +35,7 @@ export default function DailyFeed() {
   const [kus, setKus] = useState<Ku[]>([])
   const [prompt, setPrompt] = useState<Prompt | null>(null)
   const [loading, setLoading] = useState(true)
+  const { filterKus } = useWordFilter()
 
   useEffect(() => {
     const fetchDaily = async () => {
@@ -77,7 +79,7 @@ export default function DailyFeed() {
           </div>
         )}
 
-        {kus.map(ku => (
+        {filterKus(kus).map(ku => (
           <KuCard key={ku.id} ku={ku} />
         ))}
 

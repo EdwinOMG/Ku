@@ -5,6 +5,7 @@ import { api } from '../../lib/api'
 import Layout from '../../components/layout/Layout'
 import TopBar from '../../components/layout/TopBar'
 import KuCard from '../../components/ku/KuCard'
+import { useWordFilter } from '../../hooks/useWordFilter'
 
 interface Ku {
   id: string
@@ -31,6 +32,7 @@ export default function HomeFeed() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const { filterKus } = useWordFilter()
 
   const fetchKus = async (pageNum: number) => {
     if (!session) return
@@ -99,7 +101,7 @@ export default function HomeFeed() {
           </div>
         )}
 
-        {kus.map(ku => (
+        {filterKus(kus).map(ku => (
           <KuCard key={ku.id} ku={ku} onDelete={handleDelete} />
         ))}
 

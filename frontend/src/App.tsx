@@ -16,6 +16,7 @@ import WordFilter from './pages/WordFilter'
 import ComposeOpenWrite from './pages/ComposeOpenWrite'
 import OpenWritePage from './pages/OpenWritePage'
 import HashtagFeed from './pages/HashtagFeed'
+import ModDashboard from './pages/ModDashboard'
 
 
 
@@ -49,6 +50,8 @@ export default function App() {
         <Route path="/write" element={user ? <ComposeOpenWrite /> : <Navigate to="/login" />} />
         <Route path="/write/:id" element={<OpenWritePage />} />
         <Route path="/hashtag/:tag" element={<HashtagFeed />} />
+        <Route path="/mod" element={user ? <ModDashboard /> : <Navigate to="/login" />} />
+
       </Routes>
     </div>
   )

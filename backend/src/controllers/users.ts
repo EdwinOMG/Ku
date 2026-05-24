@@ -109,7 +109,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
-  const { bio, username } = req.body
+  const { bio, username, avatar_url } = req.body
 
   if (username) {
     const { data: existingUser } = await supabase
@@ -126,7 +126,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
   const { data, error } = await supabase
     .from('users')
-    .update({ bio, username })
+    .update({ bio, username, avatar_url })
     .eq('id', userId)
     .select()
     .single()

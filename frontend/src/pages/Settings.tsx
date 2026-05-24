@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
 import TopBar from '../components/layout/TopBar'
 import Layout from '../components/layout/Layout'
+import AvatarPicker from '../components/ui/AvatarPicker'
 
 export default function Settings() {
   const { user, session, logout } = useAuth()
@@ -14,18 +15,23 @@ export default function Settings() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [role, setRole] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
 
   useEffect(() => {
     if (!user) return
     supabase
       .from('users')
-      .select('username, bio')
+      .select('username, bio, role, avatar_url')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
         if (data) {
           setUsername(data.username)
           setBio(data.bio || '')
+          setRole(data.role)
+          setAvatarUrl(data.avatar_url || '')
         }
       })
   }, [user])
@@ -38,7 +44,7 @@ export default function Settings() {
     try {
       await api('/users/profile', {
         method: 'PUT',
-        body: JSON.stringify({ username, bio })
+        body: JSON.stringify({ username, bio, avatar_url: avatarUrl })
       }, session.access_token)
       setSuccess(true)
     } catch (err: any) {
@@ -60,6 +66,33 @@ export default function Settings() {
       <div className="p-4 flex flex-col gap-4">
         <div className="bg-paper-card border border-paper-border rounded-card p-4 flex flex-col gap-4">
           <p className="text-xs font-medium text-ink-secondary">profile</p>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-ink-muted">profile icon</label>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-paper-muted overflow-hidden flex items-center justify-center">
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                  : <span className="text-xl text-ink-faint">◯</span>
+                }
+              </div>
+              <button
+                onClick={() => setShowAvatarPicker(s => !s)}
+                className="text-xs text-amber-warm"
+              >
+                {showAvatarPicker ? 'close' : 'change icon'}
+              </button>
+            </div>
+            {showAvatarPicker && (
+              <AvatarPicker
+                current={avatarUrl}
+                onSelect={url => {
+                  setAvatarUrl(url)
+                  setShowAvatarPicker(false)
+                }}
+              />
+            )}
+          </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-xs text-ink-muted">username</label>
@@ -106,6 +139,17 @@ export default function Settings() {
             manage filters →
           </button>
         </div>
+
+        {['mod', 'admin'].includes(role) && (
+          <div className="bg-paper-card border border-paper-border rounded-card p-4">
+            <button
+              onClick={() => navigate('/mod')}
+              className="text-sm text-ink-secondary w-full text-left"
+            >
+              mod dashboard →
+            </button>
+          </div>
+        )}
 
         <div className="bg-paper-card border border-paper-border rounded-card p-4">
           <button
