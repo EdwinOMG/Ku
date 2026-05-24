@@ -9,6 +9,8 @@ import Profile from './pages/profile/Profile'
 import Compose from './pages/Compose'
 import Settings from './pages/Settings'
 import KuPage from './pages/KuPage'
+import Collections from './pages/collections/Collections'
+import CollectionPage from './pages/collections/CollectionPage'
 
 
 
@@ -36,6 +38,8 @@ export default function App() {
         <Route path="/compose" element={user ? <Compose /> : <Navigate to="/login" />} />
         <Route path="/settings" element={user ? <Settings /> : <Navigate to="/login" />} />
         <Route path="/ku/:id" element={<KuPage />} />
+        <Route path="/collections" element={user ? <Collections /> : <Navigate to="/login" />} />
+        <Route path="/collections/:id" element={<CollectionPage />} />
 
       </Routes>
     </div>

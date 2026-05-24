@@ -165,3 +165,17 @@ export const removeKuFromCollection = async (req: AuthRequest, res: Response) =>
 
   return res.status(200).json({ message: 'Ku removed from collection' })
 }
+
+export const getUserCollections = async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id
+
+  const { data: collections, error } = await supabase
+    .from('collections')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) return res.status(400).json({ error: error.message })
+
+  return res.status(200).json({ collections })
+}

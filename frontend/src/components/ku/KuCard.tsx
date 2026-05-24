@@ -50,6 +50,9 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
   const [liked, setLiked] = useState(ku.isLiked || false)
   const [likeCount, setLikeCount] = useState(ku.likeCount || 0)
   const [showMenu, setShowMenu] = useState(false)
+  const [showCollect, setShowCollect] = useState(false)
+  const [userCollections, setUserCollections] = useState<{ id: string, name: string }[]>([])
+  const [collecting, setCollecting] = useState(false)
 
   const isOwner = user?.id === ku.user_id
 
@@ -81,41 +84,69 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
     setShowMenu(false)
   }
 
+  const handleCollect = async () => {
+    if (!session) return
+    if (!showCollect) {
+      try {
+        const data = await api('/collections/mine', {}, session.access_token)
+        setUserCollections(data.collections)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    setShowCollect(s => !s)
+  }
+
+  const addToCollection = async (collectionId: string) => {
+    if (!session) return
+    setCollecting(true)
+    try {
+      await api(`/collections/${collectionId}/kus/${ku.id}`, {
+        method: 'POST'
+      }, session.access_token)
+      setShowCollect(false)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setCollecting(false)
+    }
+  }
+
   return (
     <div className="bg-paper-card border border-paper-border rounded-card p-4">
       <div className="flex items-center gap-2 mb-3">
-  {ku.users && (
-    <Link to={`/profile/${ku.users.username}`}>
-      <Avatar username={ku.users.username} avatarUrl={ku.users.avatar_url} />
-    </Link>
-  )}
-  {ku.users && (
-    <Link to={`/profile/${ku.users.username}`} className="text-xs font-medium text-ink-secondary hover:text-ink">
-      {ku.users.username}
-    </Link>
-  )}
-  <span className="text-xs text-ink-faint ml-auto">{timeAgo(ku.created_at)}</span>
-  {isOwner && (
-    <div className="relative">
-      <button
-        onClick={() => setShowMenu(s => !s)}
-        className="text-ink-faint text-xs px-1"
-      >
-        ···
-      </button>
-      {showMenu && (
-        <div className="absolute right-0 top-5 bg-paper-card border border-paper-border rounded-lg shadow-sm z-10 overflow-hidden">
-          <button
-            onClick={handleDelete}
-            className="block px-4 py-2 text-xs text-red-500 hover:bg-paper-muted w-full text-left"
-          >
-            delete
-          </button>
-        </div>
-      )}
-    </div>
-  )}
-</div>
+        {ku.users && (
+          <Link to={`/profile/${ku.users.username}`}>
+            <Avatar username={ku.users.username} avatarUrl={ku.users.avatar_url} />
+          </Link>
+        )}
+        {ku.users && (
+          <Link to={`/profile/${ku.users.username}`} className="text-xs font-medium text-ink-secondary hover:text-ink">
+            {ku.users.username}
+          </Link>
+        )}
+        <span className="text-xs text-ink-faint ml-auto">{timeAgo(ku.created_at)}</span>
+        {isOwner && (
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(s => !s)}
+              className="text-ink-faint text-xs px-1"
+            >
+              ···
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-5 bg-paper-card border border-paper-border rounded-lg shadow-sm z-10 overflow-hidden">
+                <button
+                  onClick={handleDelete}
+                  className="block px-4 py-2 text-xs text-red-500 hover:bg-paper-muted w-full text-left"
+                >
+                  delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="border-t border-b border-paper-muted py-3 mb-3">
         <p className="text-sm text-ink leading-relaxed">{ku.line1}</p>
@@ -150,9 +181,31 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
         >
           ◎ comment
         </Link>
-        <button className="text-xs text-ink-faint ml-auto">
-          ⊕ collect
-        </button>
+        <div className="relative ml-auto">
+          <button
+            onClick={handleCollect}
+            className="text-xs text-ink-faint"
+          >
+            ⊕ collect
+          </button>
+          {showCollect && (
+            <div className="absolute bottom-6 right-0 bg-paper-card border border-paper-border rounded-lg z-10 min-w-40 overflow-hidden">
+              {userCollections.length === 0 && (
+                <p className="text-xs text-ink-faint px-3 py-2">no collections yet</p>
+              )}
+              {userCollections.map(col => (
+                <button
+                  key={col.id}
+                  onClick={() => addToCollection(col.id)}
+                  disabled={collecting}
+                  className="block w-full text-left px-3 py-2 text-xs text-ink hover:bg-paper-muted"
+                >
+                  {col.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button className="text-xs text-ink-faint">
           ↗ share
         </button>

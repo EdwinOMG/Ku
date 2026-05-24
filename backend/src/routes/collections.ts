@@ -5,12 +5,14 @@ import {
   addKuToCollection,
   removeKuFromCollection,
   getCollection,
-  updateCollection
+  updateCollection,
+  getUserCollections
 } from '../controllers/collections'
 import { requireAuth, optionalAuth } from '../middleware/auth'
 
 const router = Router()
 
+router.get('/mine', requireAuth, getUserCollections)
 router.get('/:id', optionalAuth, getCollection)
 router.post('/', requireAuth, createCollection)
 router.put('/:id', requireAuth, updateCollection)
