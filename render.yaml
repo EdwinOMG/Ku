@@ -12,10 +12,11 @@ services:
       - key: PORT
         value: 3000
 
-  - type: static
+  - type: web
     name: ku-frontend
+    env: node
     buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    startCommand: cd frontend && npm install -g serve && serve -s dist -l 4000
     envVars:
       - key: VITE_SUPABASE_URL
         sync: false
