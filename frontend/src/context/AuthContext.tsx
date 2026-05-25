@@ -21,16 +21,19 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const [username, setUsername] = useState('')
+  const [username, setUsername] = useState(() => localStorage.getItem('ku_username') || '')
   const [loading, setLoading] = useState(true)
 
-  const fetchUsername = async (userId: string) => {
+  const fetchAndStoreUsername = async (userId: string) => {
     const { data } = await supabase
       .from('users')
       .select('username')
       .eq('id', userId)
       .single()
-    if (data) setUsername(data.username)
+    if (data?.username) {
+      setUsername(data.username)
+      localStorage.setItem('ku_username', data.username)
+    }
   }
 
   useEffect(() => {
@@ -50,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!profile) {
           await supabase.auth.signOut()
+          localStorage.removeItem('ku_username')
           setUser(null)
           setSession(null)
           setLoading(false)
@@ -57,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         setUsername(profile.username)
+        localStorage.setItem('ku_username', profile.username)
       }
 
       setSession(session)
@@ -68,9 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        await fetchUsername(session.user.id)
+        await fetchAndStoreUsername(session.user.id)
       } else {
         setUsername('')
+        localStorage.removeItem('ku_username')
       }
       setLoading(false)
     })
@@ -86,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
     setSession(null)
     setUsername('')
+    localStorage.removeItem('ku_username')
   }
 
   return (
