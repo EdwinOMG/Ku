@@ -15,6 +15,11 @@ export const api = async (
     headers
   })
 
+  if (res.status === 401) {
+    window.location.href = '/login'
+    throw new Error('Session expired, please log in again')
+  }
+
   const data = await res.json()
 
   if (!res.ok) throw new Error(data.error || 'Something went wrong')
