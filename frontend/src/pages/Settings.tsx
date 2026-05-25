@@ -8,7 +8,7 @@ import Layout from '../components/layout/Layout'
 import AvatarPicker from '../components/ui/AvatarPicker'
 
 export default function Settings() {
-  const { user, session, logout, username: contextUsername } = useAuth()
+  const { user, session, logout } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
