@@ -11,29 +11,33 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
-      e.preventDefault()
-      setError('')
-      setLoading(true)
+  e.preventDefault()
+  setError('')
+  setLoading(true)
 
-      try {
-        const data = await api('/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ email, password })
-        })
+  try {
+    // verify credentials via backend first
+    await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    })
 
-        const { error } = await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token
-        })
+    // then sign in via supabase client directly
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
 
-        if (error) throw error
-        navigate('/home')
-      } catch (err: any) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
+    if (error) throw error
+    if (data.session) {
+      navigate('/home')
     }
+  } catch (err: any) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <div className="min-h-screen bg-paper-bg flex items-center justify-center px-4">

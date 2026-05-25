@@ -32,23 +32,22 @@ export default function Register() {
 
   setLoading(true)
   try {
+    // register via backend to create public profile
     await api('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password, username })
     })
 
-    const data = await api('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    })
-
-    const { error } = await supabase.auth.setSession({
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token
+    // sign in directly via supabase client instead of backend
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
     })
 
     if (error) throw error
-    navigate('/home')
+    if (data.session) {
+      navigate('/home')
+    }
   } catch (err: any) {
     setError(err.message)
   } finally {
