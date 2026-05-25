@@ -5,6 +5,7 @@ import type { User, Session } from '@supabase/supabase-js'
 interface AuthContextType {
   user: User | null
   session: Session | null
+  username: string
   loading: boolean
   logout: () => Promise<void>
 }
@@ -12,6 +13,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
+  username: '',
   loading: true,
   logout: async () => {}
 })
@@ -19,7 +21,17 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
+  const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(true)
+
+  const fetchUsername = async (userId: string) => {
+    const { data } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', userId)
+      .single()
+    if (data) setUsername(data.username)
+  }
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -28,11 +40,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       clearTimeout(timeout)
-      
+
       if (session?.user) {
         const { data: profile } = await supabase
           .from('users')
-          .select('id')
+          .select('id, username')
           .eq('id', session.user.id)
           .single()
 
@@ -43,6 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false)
           return
         }
+
+        setUsername(profile.username)
       }
 
       setSession(session)
@@ -50,9 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      if (session?.user) {
+        await fetchUsername(session.user.id)
+      } else {
+        setUsername('')
+      }
       setLoading(false)
     })
 
@@ -66,10 +85,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
     setUser(null)
     setSession(null)
+    setUsername('')
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, logout }}>
+    <AuthContext.Provider value={{ user, session, username, loading, logout }}>
       {children}
     </AuthContext.Provider>
   )

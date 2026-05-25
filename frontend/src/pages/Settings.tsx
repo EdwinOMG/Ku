@@ -8,7 +8,7 @@ import Layout from '../components/layout/Layout'
 import AvatarPicker from '../components/ui/AvatarPicker'
 
 export default function Settings() {
-  const { user, session, logout } = useAuth()
+  const { user, session, logout, username: contextUsername } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
@@ -37,47 +37,46 @@ export default function Settings() {
   }, [user])
 
   const handleSave = async () => {
-  if (!session || !user) return
-  setLoading(true)
-  setError('')
-  setSuccess(false)
+    if (!session || !user) return
+    setLoading(true)
+    setError('')
+    setSuccess(false)
 
-  try {
-    let finalAvatarUrl = avatarUrl
+    try {
+      let finalAvatarUrl = avatarUrl
 
-    // if it's a base64 upload, push to Supabase storage first
-    if (avatarUrl.startsWith('data:')) {
-      const res = await fetch(avatarUrl)
-      const blob = await res.blob()
-      const ext = blob.type === 'image/png' ? 'png' : 'jpg'
-      const fileName = `${user.id}/avatar.${ext}`
+      if (avatarUrl.startsWith('data:')) {
+        const res = await fetch(avatarUrl)
+        const blob = await res.blob()
+        const ext = blob.type === 'image/png' ? 'png' : 'jpg'
+        const fileName = `${user.id}/avatar.${ext}`
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, blob, { contentType: blob.type, upsert: true })
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, blob, { contentType: blob.type, upsert: true })
 
-      if (uploadError) throw new Error(uploadError.message)
+        if (uploadError) throw new Error(uploadError.message)
 
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName)
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName)
 
-      finalAvatarUrl = urlData.publicUrl
+        finalAvatarUrl = urlData.publicUrl
+      }
+
+      await api('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ username, bio, avatar_url: finalAvatarUrl })
+      }, session.access_token)
+
+      setAvatarUrl(finalAvatarUrl)
+      setSuccess(true)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-
-    await api('/users/profile', {
-      method: 'PUT',
-      body: JSON.stringify({ username, bio, avatar_url: finalAvatarUrl })
-    }, session.access_token)
-
-    setAvatarUrl(finalAvatarUrl)
-    setSuccess(true)
-  } catch (err: any) {
-    setError(err.message)
-  } finally {
-    setLoading(false)
   }
-}
 
   const handleLogout = async () => {
     await logout()
@@ -93,7 +92,7 @@ export default function Settings() {
           <p className="text-xs font-medium text-ink-secondary">profile</p>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs text-ink-muted">profile icon</label>
+            <label className="text-xs text-ink-muted">profile picture</label>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-paper-muted overflow-hidden flex items-center justify-center">
                 {avatarUrl
@@ -105,7 +104,7 @@ export default function Settings() {
                 onClick={() => setShowAvatarPicker(s => !s)}
                 className="text-xs text-amber-warm"
               >
-                {showAvatarPicker ? 'close' : 'change icon'}
+                {showAvatarPicker ? 'close' : 'change picture'}
               </button>
             </div>
             {showAvatarPicker && (

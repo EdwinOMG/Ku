@@ -1,32 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabase'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
-  const { user } = useAuth()
-  const [username, setUsername] = useState('')
-
-  useEffect(() => {
-    if (!user) return
-    supabase
-      .from('users')
-      .select('username')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
-        if (data) setUsername(data.username)
-      })
-  }, [user])
+  const { username } = useAuth()
 
   const navItems = [
-  { path: '/home', icon: '⌂', label: 'home' },
-  { path: '/explore', icon: '◎', label: 'explore' },
-  { path: '/daily', icon: '☀', label: 'daily' },
-  { path: '/search', icon: '⌕', label: 'search' },
-  { path: `/profile/${username}`, icon: '◯', label: 'profile' },
-]
+    { path: '/home', icon: '⌂', label: 'home' },
+    { path: '/explore', icon: '◎', label: 'explore' },
+    { path: '/daily', icon: '☀', label: 'daily' },
+    { path: '/search', icon: '⌕', label: 'search' },
+    ...(username ? [{ path: `/profile/${username}`, icon: '◯', label: 'profile' }] : [{ path: '/profile', icon: '◯', label: 'profile' }]),
+  ]
 
   return (
     <div className="min-h-screen bg-paper-bg flex flex-col max-w-lg mx-auto">
