@@ -14,8 +14,23 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
   e.preventDefault()
   setError('')
-  setLoading(true)
 
+  if (username.length < 3) {
+    setError('Username must be at least 3 characters')
+    return
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    setError('Username can only contain letters, numbers and underscores')
+    return
+  }
+
+  if (password.length < 6) {
+    setError('Password must be at least 6 characters')
+    return
+  }
+
+  setLoading(true)
   try {
     await api('/auth/register', {
       method: 'POST',
