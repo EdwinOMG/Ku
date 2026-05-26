@@ -11,42 +11,44 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  e.preventDefault()
+  setError('')
+  setLoading(true)
 
-    try {
-      await api('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password })
-      })
+  try {
+    await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    })
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+    // clear any stale username first
+    localStorage.removeItem('ku_username')
 
-      if (error) throw error
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
 
-      if (data.session) {
-        // fetch and store username immediately before navigating
-        const { data: profile } = await supabase
-          .from('users')
-          .select('username')
-          .eq('id', data.session.user.id)
-          .single()
-        
-        if (profile?.username) {
-          localStorage.setItem('ku_username', profile.username)
-        }
-        navigate('/home')
+    if (error) throw error
+
+    if (data.session) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', data.session.user.id)
+        .single()
+
+      if (profile?.username) {
+        localStorage.setItem('ku_username', profile.username)
       }
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+      navigate('/home')
     }
+  } catch (err: any) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen bg-paper-bg flex items-center justify-center px-4">
