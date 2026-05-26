@@ -46,6 +46,15 @@ export default function Register() {
 
     if (error) throw error
     if (data.session) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', data.session.user.id)
+        .single()
+      
+      if (profile?.username) {
+        localStorage.setItem('ku_username', profile.username)
+      }
       navigate('/home')
     }
   } catch (err: any) {

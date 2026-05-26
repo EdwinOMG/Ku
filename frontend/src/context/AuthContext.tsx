@@ -69,12 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        await fetchAndStoreUsername(session.user.id)
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        setSession(session)
+        setUser(session?.user ?? null)
+        if (session?.user) await fetchAndStoreUsername(session.user.id)
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null)
+        setUser(null)
         setUsername('')
         localStorage.removeItem('ku_username')
       }

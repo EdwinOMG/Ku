@@ -11,33 +11,42 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setError('')
-  setLoading(true)
+    e.preventDefault()
+    setError('')
+    setLoading(true)
 
-  try {
-    // verify credentials via backend first
-    await api('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    })
+    try {
+      await api('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      })
 
-    // then sign in via supabase client directly
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
 
-    if (error) throw error
-    if (data.session) {
-      navigate('/home')
+      if (error) throw error
+
+      if (data.session) {
+        // fetch and store username immediately before navigating
+        const { data: profile } = await supabase
+          .from('users')
+          .select('username')
+          .eq('id', data.session.user.id)
+          .single()
+        
+        if (profile?.username) {
+          localStorage.setItem('ku_username', profile.username)
+        }
+        navigate('/home')
+      }
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-  } catch (err: any) {
-    setError(err.message)
-  } finally {
-    setLoading(false)
   }
-}
 
   return (
     <div className="min-h-screen bg-paper-bg flex items-center justify-center px-4">

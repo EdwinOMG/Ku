@@ -1,16 +1,23 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const { username } = useAuth()
+
+  const handleProfileClick = () => {
+    const name = username || localStorage.getItem('ku_username')
+    if (name && name !== 'null') {
+      navigate(`/profile/${name}`)
+    }
+  }
 
   const navItems = [
     { path: '/home', icon: '⌂', label: 'home' },
     { path: '/explore', icon: '◎', label: 'explore' },
     { path: '/daily', icon: '☀', label: 'daily' },
     { path: '/search', icon: '⌕', label: 'search' },
-    ...(username ? [{ path: `/profile/${username}`, icon: '◯', label: 'profile' }] : [{ path: '/profile', icon: '◯', label: 'profile' }]),
   ]
 
   return (
@@ -35,6 +42,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             )
           })}
+          <button
+            onClick={handleProfileClick}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
+              location.pathname.startsWith('/profile') ? 'text-amber-warm' : 'text-ink-faint'
+            }`}
+          >
+            <span className="text-xl">◯</span>
+            <span className="text-xs">profile</span>
+          </button>
         </div>
       </nav>
     </div>

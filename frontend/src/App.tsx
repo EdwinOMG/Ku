@@ -40,7 +40,6 @@ export default function App() {
         <Route path="/home" element={user ? <HomeFeed /> : <Navigate to="/login" />} />
         <Route path="/explore" element={<ExploreFeed />} />
         <Route path="/daily" element={<DailyFeed />} />
-        <Route path="/profile/:username" element={<Profile />} />
         <Route path="/compose" element={user ? <Compose /> : <Navigate to="/login" />} />
         <Route path="/settings" element={user ? <Settings /> : <Navigate to="/login" />} />
         <Route path="/ku/:id" element={<KuPage />} />
@@ -53,6 +52,7 @@ export default function App() {
         <Route path="/hashtag/:tag" element={<HashtagFeed />} />
         <Route path="/mod" element={user ? <ModDashboard /> : <Navigate to="/login" />} />
         <Route path="/notifications" element={user ? <Notifications /> : <Navigate to="/login" />} />
+        <Route path="/profile/:username" element={<Profile />} />
 
       </Routes>
     </div>
