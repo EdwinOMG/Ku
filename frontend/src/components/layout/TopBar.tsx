@@ -28,26 +28,33 @@ export default function TopBar({ title = 'ku', showBack = false, right }: TopBar
   }, [session])
 
   return (
-    <div className="sticky top-0 z-10 bg-paper-nav border-b border-paper-border px-4 py-3 flex items-center justify-between">
+    <div className="sticky top-0 z-20 glass border-b border-cafe-border/50 px-4 py-3 flex items-center justify-between animate-fade-in-down">
       <div className="flex items-center gap-3">
         {showBack && (
-          <button onClick={() => navigate(-1)} className="text-ink-muted text-sm">
-            ← back
+          <button
+            onClick={() => navigate(-1)}
+            className="text-ink-muted text-sm hover:text-ink transition-colors duration-200 flex items-center gap-1.5 group"
+          >
+            <span className="transition-transform duration-200 group-hover:-translate-x-0.5">←</span>
+            back
           </button>
         )}
-        <span className="text-lg font-medium text-ink">{title}</span>
+        <span className="text-lg font-display font-semibold text-ink tracking-wide">{title}</span>
       </div>
       <div className="flex items-center gap-3">
         {session && (
           <button
             onClick={() => navigate('/notifications')}
-            className="relative text-ink-muted text-lg"
+            className="relative text-ink-muted text-lg hover:text-ink transition-all duration-200 hover:scale-110"
           >
             🔔
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-warm rounded-full text-paper-card text-xs flex items-center justify-center leading-none">
+              <span className="absolute -top-1 -right-1.5 w-4.5 h-4.5 bg-moss-deep rounded-full text-cafe-latte text-[10px] flex items-center justify-center leading-none animate-grow-in font-mono">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
+            )}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1.5 w-4.5 h-4.5 bg-moss-deep/50 rounded-full animate-ping-slow" />
             )}
           </button>
         )}

@@ -70,7 +70,7 @@ export default function SketchCanvas({ onChange }: SketchCanvasProps) {
         </div>
       </div>
 
-      <div className="border border-paper-border rounded-lg overflow-hidden bg-paper-bg">
+      <div className="border border-cafe-border rounded-lg overflow-hidden bg-cafe-bg">
         <ReactSketchCanvas
             ref={canvasRef}
             width="100%"

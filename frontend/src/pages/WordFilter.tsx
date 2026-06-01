@@ -72,7 +72,7 @@ export default function WordFilter() {
       <TopBar title="word filter" showBack />
 
       <div className="p-4 flex flex-col gap-4">
-        <div className="bg-paper-card border border-paper-border rounded-card p-4 flex flex-col gap-3">
+        <div className="bg-cafe-card border border-cafe-border rounded-card p-4 flex flex-col gap-3">
           <p className="text-xs text-ink-muted">
             words and hashtags you add here will be hidden from your feeds
           </p>
@@ -83,12 +83,12 @@ export default function WordFilter() {
               onChange={e => setNewWord(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="word or #hashtag..."
-              className="flex-1 bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid placeholder:text-ink-faint"
+              className="flex-1 bg-cafe-bg border border-cafe-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid placeholder:text-ink-faint"
             />
             <button
               onClick={handleAdd}
               disabled={adding || !newWord.trim()}
-              className="bg-amber-warm text-paper-card rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
+              className="bg-amber-warm text-cafe-latte rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
               {adding ? '...' : 'add'}
             </button>
@@ -96,7 +96,7 @@ export default function WordFilter() {
           {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
 
-        <div className="bg-paper-card border border-paper-border rounded-card divide-y divide-paper-muted">
+        <div className="bg-cafe-card border border-cafe-border rounded-card divide-y divide-cafe-muted">
           {loading && (
             <p className="text-center text-ink-muted text-sm py-6">loading...</p>
           )}

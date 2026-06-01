@@ -22,170 +22,109 @@ export default function Settings() {
 
   useEffect(() => {
     if (!user) return
-    supabase
-      .from('users')
-      .select('username, bio, role, avatar_url')
-      .eq('id', user.id)
-      .single()
+    supabase.from('users').select('username, bio, role, avatar_url').eq('id', user.id).single()
       .then(({ data }) => {
-        if (data) {
-          setUsername(data.username)
-          setBio(data.bio || '')
-          setRole(data.role)
-          setAvatarUrl(data.avatar_url || '')
-          setPreviewUrl(data.avatar_url || '')
-        }
+        if (data) { setUsername(data.username); setBio(data.bio || ''); setRole(data.role); setAvatarUrl(data.avatar_url || ''); setPreviewUrl(data.avatar_url || '') }
       })
   }, [user])
 
-  const handleAvatarSelect = (url: string) => {
-    setPreviewUrl(url)
-    setAvatarUrl(url)
-    setShowAvatarPicker(false)
-  }
+  const handleAvatarSelect = (url: string) => { setPreviewUrl(url); setAvatarUrl(url); setShowAvatarPicker(false) }
 
   const handleSave = async () => {
     if (!session || !user) return
-    setLoading(true)
-    setError('')
-    setSuccess(false)
-
+    setLoading(true); setError(''); setSuccess(false)
     try {
       let finalAvatarUrl = avatarUrl
-
       if (avatarUrl.startsWith('data:')) {
         const res = await fetch(avatarUrl)
         const blob = await res.blob()
         const ext = blob.type === 'image/png' ? 'png' : 'jpg'
         const fileName = `${user.id}/avatar.${ext}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, blob, { contentType: blob.type, upsert: true })
-
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, blob, { contentType: blob.type, upsert: true })
         if (uploadError) throw new Error(uploadError.message)
-
-        const { data: urlData } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(fileName)
-
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName)
         finalAvatarUrl = urlData.publicUrl
       }
-
-      await api('/users/profile', {
-        method: 'PUT',
-        body: JSON.stringify({ bio, avatar_url: finalAvatarUrl })
-      }, session.access_token)
-
-      setAvatarUrl(finalAvatarUrl)
-      setPreviewUrl(finalAvatarUrl)
-      setSuccess(true)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+      await api('/users/profile', { method: 'PUT', body: JSON.stringify({ bio, avatar_url: finalAvatarUrl }) }, session.access_token)
+      setAvatarUrl(finalAvatarUrl); setPreviewUrl(finalAvatarUrl); setSuccess(true)
+    } catch (err: any) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
+  const handleLogout = async () => { await logout(); navigate('/login') }
 
   return (
     <Layout>
       <TopBar title="settings" showBack />
-
-      <div className="p-4 flex flex-col gap-4">
-
-        <div className="bg-paper-card border border-paper-border rounded-card p-4 flex flex-col gap-4">
-          <p className="text-xs font-medium text-ink-secondary">profile</p>
+      <div className="p-4 flex flex-col gap-4 stagger">
+        {/* Profile card */}
+        <div className="cozy-card p-5 flex flex-col gap-4 animate-fade-in-up">
+          <p className="text-xs font-display font-semibold text-ink-secondary tracking-wide">profile</p>
 
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-paper-muted overflow-hidden flex items-center justify-center flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-moss-light overflow-hidden flex items-center justify-center flex-shrink-0 ring-2 ring-moss-sage/30 shadow-warm">
               {previewUrl
-                ? <img src={previewUrl} alt="avatar preview" className="w-full h-full object-cover" />
-                : <span className="text-2xl text-ink-faint">◯</span>
+                ? <img src={previewUrl} alt="avatar" className="w-full h-full object-cover" />
+                : <span className="text-2xl text-ink-ghost">◯</span>
               }
             </div>
             <div className="flex flex-col gap-1">
-              <p className="text-sm font-medium text-ink">{username}</p>
-              <Link
-                to={`/profile/${username}`}
-                className="text-xs text-amber-warm"
-              >
+              <p className="text-sm font-display font-semibold text-ink">{username}</p>
+              <Link to={`/profile/${username}`} className="text-xs text-amber-warm hover:text-amber-mid transition-colors font-display">
                 view your profile →
               </Link>
-              <button
-                onClick={() => setShowAvatarPicker(s => !s)}
-                className="text-xs text-ink-muted text-left"
-              >
+              <button onClick={() => setShowAvatarPicker(s => !s)}
+                className="text-xs text-ink-muted text-left hover:text-ink transition-colors">
                 {showAvatarPicker ? 'cancel' : 'change picture'}
               </button>
             </div>
           </div>
 
           {showAvatarPicker && (
-            <AvatarPicker
-              current={previewUrl}
-              onSelect={handleAvatarSelect}
-            />
+            <div className="animate-slide-up"><AvatarPicker current={previewUrl} onSelect={handleAvatarSelect} /></div>
           )}
 
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center">
-              <label className="text-xs text-ink-muted">bio</label>
-              <span className="text-xs text-ink-faint">{bio.length}/160</span>
+              <label className="text-xs text-ink-muted font-display">bio</label>
+              <span className="text-[10px] text-ink-ghost font-mono">{bio.length}/160</span>
             </div>
-            <textarea
-              value={bio}
-              onChange={e => setBio(e.target.value)}
-              rows={3}
-              maxLength={160}
-              className="bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink resize-none focus:outline-none focus:border-amber-mid"
-              placeholder="say something about yourself..."
-            />
+            <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} maxLength={160}
+              className="cozy-input resize-none" placeholder="say something about yourself..." />
           </div>
 
-          {error && <p className="text-xs text-red-500">{error}</p>}
-          {success && <p className="text-xs text-green-600">saved successfully</p>}
+          {error && <p className="text-xs text-red-400 animate-scale-in">{error}</p>}
+          {success && <p className="text-xs text-moss-deep animate-scale-in">✓ saved successfully</p>}
 
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="bg-amber-warm text-paper-card rounded-lg py-2 text-sm font-medium disabled:opacity-50"
-          >
+          <button onClick={handleSave} disabled={loading} className="btn-warm">
             {loading ? 'saving...' : 'save changes'}
           </button>
         </div>
 
-        <div className="bg-paper-card border border-paper-border rounded-card p-4 flex flex-col gap-3">
-          <p className="text-xs font-medium text-ink-secondary">word filter</p>
-          <p className="text-xs text-ink-muted">block words or hashtags from appearing in your feeds</p>
-          <button
-            onClick={() => navigate('/settings/filters')}
-            className="text-xs text-amber-warm text-left"
-          >
+        {/* Word filter */}
+        <div className="cozy-card p-5 flex flex-col gap-2 animate-fade-in-up">
+          <p className="text-xs font-display font-semibold text-ink-secondary">word filter</p>
+          <p className="text-xs text-ink-muted italic">block words or hashtags from your feeds</p>
+          <button onClick={() => navigate('/settings/filters')}
+            className="text-xs text-amber-warm text-left font-display hover:text-amber-mid transition-colors mt-1">
             manage filters →
           </button>
         </div>
 
+        {/* Mod */}
         {['mod', 'admin'].includes(role) && (
-          <div className="bg-paper-card border border-paper-border rounded-card p-4">
-            <button
-              onClick={() => navigate('/mod')}
-              className="text-sm text-ink-secondary w-full text-left"
-            >
-              mod dashboard →
+          <div className="cozy-card p-5 animate-fade-in-up">
+            <button onClick={() => navigate('/mod')}
+              className="text-sm text-ink-secondary w-full text-left font-display hover:text-ink transition-colors">
+              🌿 mod dashboard →
             </button>
           </div>
         )}
 
-        <div className="bg-paper-card border border-paper-border rounded-card p-4">
-          <button
-            onClick={handleLogout}
-            className="text-sm text-red-500 w-full text-left"
-          >
+        {/* Sign out */}
+        <div className="cozy-card p-5 animate-fade-in-up">
+          <button onClick={handleLogout}
+            className="text-sm text-clay-rust w-full text-left font-display hover:text-red-500 transition-colors">
             sign out
           </button>
         </div>

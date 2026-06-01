@@ -30,7 +30,7 @@ export default function ShareCard({ ku, onClose }: ShareCardProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-paper-bg rounded-card p-4 w-full max-w-sm flex flex-col gap-4">
+      <div className="bg-cafe-bg rounded-card p-4 w-full max-w-sm flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-ink-secondary">share card</p>
           <button onClick={onClose} className="text-xs text-ink-muted">close</button>
@@ -39,9 +39,9 @@ export default function ShareCard({ ku, onClose }: ShareCardProps) {
         <div
           ref={cardRef}
           style={{ backgroundColor: '#FDFAF4', fontFamily: 'Georgia, serif' }}
-          className="border border-paper-border rounded-card p-6 flex flex-col gap-4"
+          className="border border-cafe-border rounded-card p-6 flex flex-col gap-4"
         >
-          <div className="border-t border-b border-paper-muted py-4">
+          <div className="border-t border-b border-cafe-muted py-4">
             <p style={{ fontSize: 16, color: '#2C2C2A', lineHeight: 2 }}>{ku.line1}</p>
             <p style={{ fontSize: 16, color: '#2C2C2A', lineHeight: 2 }}>{ku.line2}</p>
             <p style={{ fontSize: 16, color: '#2C2C2A', lineHeight: 2 }}>{ku.line3}</p>
@@ -72,7 +72,7 @@ export default function ShareCard({ ku, onClose }: ShareCardProps) {
 
         <button
           onClick={handleExport}
-          className="bg-amber-warm text-paper-card rounded-lg py-2 text-sm font-medium"
+          className="bg-amber-warm text-cafe-latte rounded-lg py-2 text-sm font-medium"
         >
           download image
         </button>

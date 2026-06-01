@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 
 export const api = async (
   endpoint: string,
@@ -10,7 +10,9 @@ export const api = async (
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   }
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  const url = `${API_URL}${endpoint}`
+
+  const res = await fetch(url, {
     ...options,
     headers
   })

@@ -13,10 +13,7 @@ interface Ku {
   visibility: string
   sketch_url?: string
   created_at: string
-  users: {
-    username: string
-    avatar_url?: string
-  }
+  users: { username: string; avatar_url?: string }
   likeCount?: number
   hashtags?: string[]
   isLiked?: boolean
@@ -35,12 +32,12 @@ function timeAgo(date: string) {
   return `${Math.floor(seconds / 86400)}d`
 }
 
-function Avatar({ username, avatarUrl }: { username: string, avatarUrl?: string }) {
+function Avatar({ username, avatarUrl }: { username: string; avatarUrl?: string }) {
   if (avatarUrl) {
-    return <img src={avatarUrl} alt={username} className="w-7 h-7 rounded-full object-cover" />
+    return <img src={avatarUrl} alt={username} className="w-8 h-8 rounded-full object-cover ring-2 ring-cafe-border/30" />
   }
   return (
-    <div className="w-7 h-7 rounded-full bg-paper-muted flex items-center justify-center text-xs font-medium text-ink-secondary">
+    <div className="w-8 h-8 rounded-full bg-moss-light flex items-center justify-center text-xs font-semibold text-moss-deep ring-2 ring-moss-sage/30">
       {username[0].toUpperCase()}
     </div>
   )
@@ -52,27 +49,22 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
   const [likeCount, setLikeCount] = useState(ku.likeCount || 0)
   const [showMenu, setShowMenu] = useState(false)
   const [showCollect, setShowCollect] = useState(false)
-  const [userCollections, setUserCollections] = useState<{ id: string, name: string }[]>([])
+  const [userCollections, setUserCollections] = useState<{ id: string; name: string }[]>([])
   const [collecting, setCollecting] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [reporting, setReporting] = useState(false)
   const [hashtags, setHashtags] = useState<string[]>(ku.hashtags || [])
+  const [likeAnim, setLikeAnim] = useState(false)
 
   const isOwner = user?.id === ku.user_id
 
   useEffect(() => {
     if (ku.hashtags && ku.hashtags.length > 0) return
-    const fetchHashtags = async () => {
-      try {
-        const data = await api(`/kus/${ku.id}`, {}, session?.access_token)
-        setHashtags(data.ku.hashtags || [])
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchHashtags()
+    api(`/kus/${ku.id}`, {}, session?.access_token)
+      .then(data => setHashtags(data.ku.hashtags || []))
+      .catch(console.error)
   }, [ku.id])
 
   const handleLike = async () => {
@@ -86,10 +78,10 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
         await api(`/likes/${ku.id}`, { method: 'POST' }, session.access_token)
         setLiked(true)
         setLikeCount(c => c + 1)
+        setLikeAnim(true)
+        setTimeout(() => setLikeAnim(false), 600)
       }
-    } catch (err) {
-      console.error(err)
-    }
+    } catch (err) { console.error(err) }
   }
 
   const handleDelete = async () => {
@@ -97,9 +89,7 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
     try {
       await api(`/kus/${ku.id}`, { method: 'DELETE' }, session.access_token)
       onDelete?.(ku.id)
-    } catch (err) {
-      console.error(err)
-    }
+    } catch (err) { console.error(err) }
     setShowMenu(false)
   }
 
@@ -109,9 +99,7 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
       try {
         const data = await api('/collections/mine', {}, session.access_token)
         setUserCollections(data.collections)
-      } catch (err) {
-        console.error(err)
-      }
+      } catch (err) { console.error(err) }
     }
     setShowCollect(s => !s)
   }
@@ -120,15 +108,10 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
     if (!session) return
     setCollecting(true)
     try {
-      await api(`/collections/${collectionId}/kus/${ku.id}`, {
-        method: 'POST'
-      }, session.access_token)
+      await api(`/collections/${collectionId}/kus/${ku.id}`, { method: 'POST' }, session.access_token)
       setShowCollect(false)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setCollecting(false)
-    }
+    } catch (err) { console.error(err) }
+    finally { setCollecting(false) }
   }
 
   const handleReport = async () => {
@@ -137,175 +120,117 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
     try {
       await api('/reports', {
         method: 'POST',
-        body: JSON.stringify({
-          reported_ku_id: ku.id,
-          reason: reportReason
-        })
+        body: JSON.stringify({ reported_ku_id: ku.id, reason: reportReason })
       }, session.access_token)
       setShowReport(false)
       setReportReason('')
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setReporting(false)
-    }
+    } catch (err) { console.error(err) }
+    finally { setReporting(false) }
   }
 
   return (
-    <div className="bg-paper-card border border-paper-border rounded-card p-4">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="cozy-card p-4 paper-texture animate-fade-in-up">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 mb-3">
         {ku.users && (
-          <Link to={`/profile/${ku.users.username}`}>
-            <Avatar username={ku.users.username} avatarUrl={ku.users.avatar_url} />
-          </Link>
+          <Link to={`/profile/${ku.users.username}`}><Avatar username={ku.users.username} avatarUrl={ku.users.avatar_url} /></Link>
         )}
         {ku.users && (
-          <Link to={`/profile/${ku.users.username}`} className="text-xs font-medium text-ink-secondary hover:text-ink">
+          <Link to={`/profile/${ku.users.username}`} className="text-xs font-semibold text-ink-secondary hover:text-ink transition-colors font-display">
             {ku.users.username}
           </Link>
         )}
-        <span className="text-xs text-ink-faint ml-auto">{timeAgo(ku.created_at)}</span>
-        {isOwner ? (
+        <span className="text-[10px] text-ink-ghost ml-auto font-mono">{timeAgo(ku.created_at)}</span>
+        {(isOwner || session) && (
           <div className="relative">
-            <button
-              onClick={() => setShowMenu(s => !s)}
-              className="text-ink-faint text-xs px-1"
-            >
-              ···
-            </button>
+            <button onClick={() => setShowMenu(s => !s)} className="text-ink-ghost hover:text-ink-muted text-xs px-1 transition-colors">···</button>
             {showMenu && (
-              <div className="absolute right-0 top-5 bg-paper-card border border-paper-border rounded-lg shadow-sm z-10 overflow-hidden">
-                <button
-                  onClick={handleDelete}
-                  className="block px-4 py-2 text-xs text-red-500 hover:bg-paper-muted w-full text-left"
-                >
-                  delete
-                </button>
+              <div className="absolute right-0 top-6 bg-cafe-card border border-cafe-border rounded-xl shadow-warm-lg z-10 overflow-hidden animate-scale-in min-w-[100px]">
+                {isOwner ? (
+                  <button onClick={handleDelete} className="block px-4 py-2.5 text-xs text-red-400 hover:bg-cafe-muted w-full text-left transition-colors">delete</button>
+                ) : (
+                  <button onClick={() => { setShowMenu(false); setShowReport(true) }} className="block px-4 py-2.5 text-xs text-ink hover:bg-cafe-muted w-full text-left transition-colors">report</button>
+                )}
               </div>
             )}
           </div>
-        ) : session ? (
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(s => !s)}
-              className="text-ink-faint text-xs px-1"
-            >
-              ···
-            </button>
-            {showMenu && (
-              <div className="absolute right-0 top-5 bg-paper-card border border-paper-border rounded-lg shadow-sm z-10 overflow-hidden">
-                <button
-                  onClick={() => {
-                    setShowMenu(false)
-                    setShowReport(true)
-                  }}
-                  className="block px-4 py-2 text-xs text-ink hover:bg-paper-muted w-full text-left"
-                >
-                  report
-                </button>
-              </div>
-            )}
-          </div>
-        ) : null}
+        )}
       </div>
 
-      <div className="border-t border-b border-paper-muted py-3 mb-3">
-        <p className="text-sm text-ink leading-relaxed">{ku.line1}</p>
-        <p className="text-sm text-ink leading-relaxed">{ku.line2}</p>
-        <p className="text-sm text-ink leading-relaxed">{ku.line3}</p>
+      {/* Poem */}
+      <div className="py-4 mb-3 relative">
+        <div className="vine-divider mb-4" />
+        <div className="px-2 space-y-0.5">
+          <p className="text-[15px] text-ink leading-[1.9] font-body animate-word-appear" style={{ animationDelay: '0.1s' }}>{ku.line1}</p>
+          <p className="text-[15px] text-ink leading-[1.9] font-body pl-3 animate-word-appear" style={{ animationDelay: '0.2s' }}>{ku.line2}</p>
+          <p className="text-[15px] text-ink leading-[1.9] font-body animate-word-appear" style={{ animationDelay: '0.3s' }}>{ku.line3}</p>
+        </div>
+        <div className="vine-divider mt-4" />
       </div>
 
+      {/* Hashtags */}
       {hashtags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
           {hashtags.map(tag => (
-            <Link
-              key={tag}
-              to={`/hashtag/${tag}`}
-              className="text-xs text-amber-mid bg-amber-light px-2 py-0.5 rounded-full"
-            >
-              #{tag}
-            </Link>
+            <Link key={tag} to={`/hashtag/${tag}`} className="nature-tag">#{tag}</Link>
           ))}
         </div>
       )}
 
+      {/* Actions */}
       <div className="flex items-center gap-4">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1 text-xs ${liked ? 'text-amber-warm' : 'text-ink-faint'}`}
+          className={`flex items-center gap-1.5 text-xs transition-all duration-300 group ${liked ? 'text-amber-warm' : 'text-ink-ghost hover:text-ink-muted'}`}
         >
-          {liked ? '♥' : '♡'} {likeCount > 0 && likeCount}
+          <span className={`text-sm transition-all duration-300 ${likeAnim ? 'animate-like-burst scale-125' : 'scale-100'} group-hover:scale-110`}>
+            {liked ? '♥' : '♡'}
+          </span>
+          {likeCount > 0 && <span className={`font-mono text-[11px] transition-all duration-300 ${likeAnim ? 'animate-counter-pulse' : ''}`}>{likeCount}</span>}
         </button>
-        <Link
-          to={`/ku/${ku.id}`}
-          className="flex items-center gap-1 text-xs text-ink-faint"
-        >
-          ◎ comment
+        <Link to={`/ku/${ku.id}`} className="flex items-center gap-1.5 text-xs text-ink-ghost hover:text-ink-muted transition-all duration-300 group">
+          <span className="text-sm group-hover:animate-wiggle">◎</span> <span className="group-hover:tracking-wide transition-all duration-300">comment</span>
         </Link>
         <div className="relative ml-auto">
-          <button onClick={handleCollect} className="text-xs text-ink-faint">
-            ⊕ collect
-          </button>
+          <button onClick={handleCollect} className="text-xs text-ink-ghost hover:text-ink-muted transition-all duration-300 hover:tracking-wide">⊕ collect</button>
           {showCollect && (
-            <div className="absolute bottom-6 right-0 bg-paper-card border border-paper-border rounded-lg z-10 min-w-40 overflow-hidden">
-              {userCollections.length === 0 && (
-                <p className="text-xs text-ink-faint px-3 py-2">no collections yet</p>
-              )}
+            <div className="absolute bottom-7 right-0 bg-cafe-card border border-cafe-border rounded-xl shadow-warm-lg z-10 min-w-44 overflow-hidden animate-scale-in">
+              {userCollections.length === 0 && <p className="text-xs text-ink-ghost px-3 py-2.5 italic">no collections yet</p>}
               {userCollections.map(col => (
-                <button
-                  key={col.id}
-                  onClick={() => addToCollection(col.id)}
-                  disabled={collecting}
-                  className="block w-full text-left px-3 py-2 text-xs text-ink hover:bg-paper-muted"
-                >
-                  {col.name}
-                </button>
+                <button key={col.id} onClick={() => addToCollection(col.id)} disabled={collecting}
+                  className="block w-full text-left px-3 py-2.5 text-xs text-ink hover:bg-cafe-muted transition-colors">{col.name}</button>
               ))}
             </div>
           )}
         </div>
-        <button onClick={() => setShowShare(true)} className="text-xs text-ink-faint">
-          ↗ share
-        </button>
+        <button onClick={() => setShowShare(true)} className="text-xs text-ink-ghost hover:text-ink-muted transition-colors">↗ share</button>
       </div>
 
+      {/* Sketch */}
       {ku.sketch_url && (
-        <div className="mt-3 border-t border-paper-muted pt-3">
-          <img src={ku.sketch_url} alt="sketch" className="w-full rounded-lg" />
+        <div className="mt-3 pt-3">
+          <div className="vine-divider mb-3" />
+          <img src={ku.sketch_url} alt="sketch" className="w-full rounded-xl" />
         </div>
       )}
 
+      {/* Report */}
       {showReport && (
-        <div className="mt-3 border-t border-paper-muted pt-3 flex flex-col gap-2">
-          <p className="text-xs font-medium text-ink-secondary">report this ku</p>
-          <textarea
-            value={reportReason}
-            onChange={e => setReportReason(e.target.value)}
-            rows={2}
+        <div className="mt-3 pt-3 flex flex-col gap-2 animate-slide-up">
+          <div className="vine-divider mb-1" />
+          <p className="text-xs font-display text-ink-secondary italic">report this ku</p>
+          <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} rows={2}
             placeholder="reason for reporting..."
-            className="w-full bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-xs text-ink resize-none focus:outline-none focus:border-amber-mid"
-          />
+            className="cozy-input text-xs resize-none" />
           <div className="flex gap-2">
-            <button
-              onClick={handleReport}
-              disabled={reporting || !reportReason.trim()}
-              className="flex-1 bg-amber-warm text-paper-card rounded-lg py-1.5 text-xs font-medium disabled:opacity-50"
-            >
-              {reporting ? 'reporting...' : 'submit report'}
-            </button>
-            <button
-              onClick={() => setShowReport(false)}
-              className="text-xs text-ink-muted px-3"
-            >
-              cancel
-            </button>
+            <button onClick={handleReport} disabled={reporting || !reportReason.trim()}
+              className="flex-1 btn-warm text-xs py-1.5">{reporting ? 'reporting...' : 'submit report'}</button>
+            <button onClick={() => setShowReport(false)} className="text-xs text-ink-muted px-3 hover:text-ink transition-colors">cancel</button>
           </div>
         </div>
       )}
 
-      {showShare && (
-        <ShareCard ku={ku} onClose={() => setShowShare(false)} />
-      )}
+      {showShare && <ShareCard ku={ku} onClose={() => setShowShare(false)} />}
     </div>
   )
 }

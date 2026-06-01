@@ -26,13 +26,16 @@ export default function App() {
   const { user, loading } = useAuth()
 
   if (loading) return (
-    <div className="min-h-screen bg-paper-bg flex items-center justify-center">
-      <p className="text-ink-muted text-sm">loading...</p>
+    <div className="min-h-screen bg-cafe-bg flex items-center justify-center">
+      <div className="text-center animate-fade-in">
+        <div className="text-2xl mb-2 animate-float">🍃</div>
+        <p className="text-ink-muted text-sm font-display italic">loading...</p>
+      </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-paper-bg">
+    <div className="min-h-screen bg-cafe-bg">
       <Routes>
         <Route path="/" element={user ? <Navigate to="/home" /> : <Navigate to="/login" />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" />} />

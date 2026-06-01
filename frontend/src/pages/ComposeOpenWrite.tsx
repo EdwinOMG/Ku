@@ -36,7 +36,7 @@ export default function ComposeOpenWrite() {
   }
 
   return (
-    <div className="min-h-screen bg-paper-bg max-w-lg mx-auto">
+    <div className="min-h-screen bg-cafe-bg max-w-lg mx-auto">
       <TopBar
         title="open write"
         showBack
@@ -52,7 +52,7 @@ export default function ComposeOpenWrite() {
       />
 
       <div className="p-4 flex flex-col gap-4">
-        <div className="bg-paper-card border border-paper-border rounded-card p-4">
+        <div className="bg-cafe-card border border-cafe-border rounded-card p-4">
           <textarea
             value={content}
             onChange={e => setContent(e.target.value)}
@@ -63,12 +63,12 @@ export default function ComposeOpenWrite() {
           <p className="text-xs text-ink-faint text-right mt-2">{content.length} characters</p>
         </div>
 
-        <div className="bg-paper-card border border-paper-border rounded-card p-4 flex flex-col gap-2">
+        <div className="bg-cafe-card border border-cafe-border rounded-card p-4 flex flex-col gap-2">
           <label className="text-xs text-ink-secondary">visibility</label>
           <select
             value={visibility}
             onChange={e => setVisibility(e.target.value)}
-            className="bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
+            className="bg-cafe-bg border border-cafe-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
           >
             <option value="private">private — only you</option>
             <option value="friends">friends only</option>

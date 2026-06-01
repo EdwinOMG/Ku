@@ -70,7 +70,7 @@ export default function OpenWritePage() {
         )}
 
         {write && (
-          <div className="bg-paper-card border border-paper-border rounded-card p-5">
+          <div className="bg-cafe-card border border-cafe-border rounded-card p-5">
             <div className="flex items-center gap-2 mb-4">
               <p className="text-xs font-medium text-ink-secondary">
                 {write.users?.username}

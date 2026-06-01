@@ -46,7 +46,7 @@ export default function AvatarPicker({ current, onSelect }: AvatarPickerProps) {
         <p className="text-xs text-ink-faint">or upload your own</p>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="bg-paper-bg border border-paper-border rounded-lg px-4 py-2 text-xs text-ink-secondary text-left"
+          className="bg-cafe-bg border border-cafe-border rounded-lg px-4 py-2 text-xs text-ink-secondary text-left"
         >
           choose image (jpg, png, max 2MB)
         </button>

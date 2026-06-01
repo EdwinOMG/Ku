@@ -92,12 +92,12 @@ export default function ModDashboard() {
     <Layout>
       <TopBar title="mod dashboard" showBack />
 
-      <div className="bg-paper-card border-b border-paper-border p-4 flex flex-col gap-3">
+      <div className="bg-cafe-card border-b border-cafe-border p-4 flex flex-col gap-3">
         <p className="text-xs font-medium text-ink-secondary">today's prompt</p>
         {promptLoading ? (
             <p className="text-xs text-ink-faint">loading...</p>
         ) : todayPrompt ? (
-            <div className="bg-paper-bg border border-paper-border rounded-lg px-3 py-2">
+            <div className="bg-cafe-bg border border-cafe-border rounded-lg px-3 py-2">
             <p className="text-sm text-ink">{todayPrompt}</p>
             <p className="text-xs text-ink-faint mt-1">prompt is locked for today</p>
             </div>
@@ -110,12 +110,12 @@ export default function ModDashboard() {
                 value={promptInput}
                 onChange={e => setPromptInput(e.target.value)}
                 placeholder="today's word or theme..."
-                className="flex-1 bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
+                className="flex-1 bg-cafe-bg border border-cafe-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
                 />
                 <button
                 onClick={handleSetPrompt}
                 disabled={settingPrompt || !promptInput.trim()}
-                className="bg-amber-warm text-paper-card rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
+                className="bg-amber-warm text-cafe-latte rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                 {settingPrompt ? '...' : 'set'}
                 </button>
@@ -124,7 +124,7 @@ export default function ModDashboard() {
         )}
         </div>
 
-      <div className="flex border-b border-paper-border bg-paper-nav">
+      <div className="flex border-b border-cafe-border bg-cafe-nav">
         {(['pending', 'reviewed', 'dismissed'] as const).map(t => (
           <button
             key={t}
@@ -150,7 +150,7 @@ export default function ModDashboard() {
         )}
 
         {reports.map(report => (
-          <div key={report.id} className="bg-paper-card border border-paper-border rounded-card p-4 flex flex-col gap-3">
+          <div key={report.id} className="bg-cafe-card border border-cafe-border rounded-card p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-ink-faint">reported by {report.reporter?.username}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -158,21 +158,21 @@ export default function ModDashboard() {
                   ? 'bg-amber-light text-amber-mid'
                   : report.status === 'reviewed'
                   ? 'bg-green-100 text-green-700'
-                  : 'bg-paper-muted text-ink-faint'
+                  : 'bg-cafe-muted text-ink-faint'
               }`}>
                 {report.status}
               </span>
             </div>
 
             {report.reported_user && (
-              <div className="bg-paper-bg border border-paper-border rounded-lg p-3">
+              <div className="bg-cafe-bg border border-cafe-border rounded-lg p-3">
                 <p className="text-xs text-ink-muted mb-1">reported user</p>
                 <p className="text-sm text-ink">@{report.reported_user.username}</p>
               </div>
             )}
 
             {report.reported_ku && (
-              <div className="bg-paper-bg border border-paper-border rounded-lg p-3">
+              <div className="bg-cafe-bg border border-cafe-border rounded-lg p-3">
                 <p className="text-xs text-ink-muted mb-1">reported ku</p>
                 <p className="text-sm text-ink leading-relaxed">
                   {report.reported_ku.line1}<br />
@@ -183,13 +183,13 @@ export default function ModDashboard() {
             )}
 
             {report.reported_comment && (
-              <div className="bg-paper-bg border border-paper-border rounded-lg p-3">
+              <div className="bg-cafe-bg border border-cafe-border rounded-lg p-3">
                 <p className="text-xs text-ink-muted mb-1">reported comment</p>
                 <p className="text-sm text-ink">{report.reported_comment.content}</p>
               </div>
             )}
 
-            <div className="bg-paper-bg border border-paper-border rounded-lg p-3">
+            <div className="bg-cafe-bg border border-cafe-border rounded-lg p-3">
               <p className="text-xs text-ink-muted mb-1">reason</p>
               <p className="text-sm text-ink">{report.reason}</p>
             </div>
@@ -198,13 +198,13 @@ export default function ModDashboard() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleUpdateStatus(report.id, 'reviewed')}
-                  className="flex-1 bg-amber-warm text-paper-card rounded-lg py-2 text-xs font-medium"
+                  className="flex-1 bg-amber-warm text-cafe-latte rounded-lg py-2 text-xs font-medium"
                 >
                   mark reviewed
                 </button>
                 <button
                   onClick={() => handleUpdateStatus(report.id, 'dismissed')}
-                  className="flex-1 border border-paper-border text-ink-muted rounded-lg py-2 text-xs"
+                  className="flex-1 border border-cafe-border text-ink-muted rounded-lg py-2 text-xs"
                 >
                   dismiss
                 </button>

@@ -121,17 +121,17 @@ export default function CollectionPage() {
       />
 
       {showEdit && (
-        <div className="bg-paper-card border-b border-paper-border p-4 flex flex-col gap-3">
+        <div className="bg-cafe-card border-b border-cafe-border p-4 flex flex-col gap-3">
           <input
             type="text"
             value={editName}
             onChange={e => setEditName(e.target.value)}
-            className="bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
+            className="bg-cafe-bg border border-cafe-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
           />
           <select
             value={editVisibility}
             onChange={e => setEditVisibility(e.target.value)}
-            className="bg-paper-bg border border-paper-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
+            className="bg-cafe-bg border border-cafe-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-amber-mid"
           >
             <option value="private">private</option>
             <option value="friends">friends only</option>
@@ -140,7 +140,7 @@ export default function CollectionPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-amber-warm text-paper-card rounded-lg py-2 text-sm font-medium disabled:opacity-50"
+            className="bg-amber-warm text-cafe-latte rounded-lg py-2 text-sm font-medium disabled:opacity-50"
           >
             {saving ? 'saving...' : 'save'}
           </button>
