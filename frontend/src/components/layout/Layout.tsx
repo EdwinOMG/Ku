@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { useEffect, useState } from 'react'
 
 const NAV_ITEMS = [
   { path: '/home', icon: '⌂', label: 'home' },
@@ -15,10 +14,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { username } = useAuth()
-  const [prevPath, setPrevPath] = useState(location.pathname)
-
-  useEffect(() => { setPrevPath(location.pathname) }, [location.pathname])
-
   const handleProfileClick = () => {
     const name = username || localStorage.getItem('ku_username')
     if (name && name !== 'null') navigate(`/profile/${name}`)

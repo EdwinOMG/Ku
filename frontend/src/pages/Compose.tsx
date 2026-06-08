@@ -80,7 +80,7 @@ function DrawCanvas({
   penSize,
   isErasing,
 }: {
-  canvasRef: React.RefObject<HTMLCanvasElement>
+  canvasRef: React.RefObject<HTMLCanvasElement | null>
   penColor: string
   penSize: number
   isErasing: boolean
