@@ -25,7 +25,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://ku-three.vercel.app',
-    'ku-git-dev-edwindoescoding.vercel.app'
+    'https://ku-git-dev-edwindoescoding.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
