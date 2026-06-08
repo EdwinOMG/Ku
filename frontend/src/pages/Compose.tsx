@@ -167,7 +167,7 @@ function StickyNote({
   animatingText: string
   currentStep: number | 'done'
   isDrawable?: boolean
-  canvasRef?: React.RefObject<HTMLCanvasElement>
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>
   penColor?: string
   penSize?: number
   isErasing?: boolean
