@@ -12,6 +12,7 @@ interface Ku {
   line3: string
   visibility: string
   sketch_url?: string
+  note_color?: string
   created_at: string
   users: { username: string; avatar_url?: string }
   likeCount?: number
@@ -157,15 +158,38 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
         )}
       </div>
 
-      {/* Poem */}
-      <div className="py-4 mb-3 relative">
-        <div className="vine-divider mb-4" />
-        <div className="px-2 space-y-0.5">
-          <p className="text-[15px] text-ink leading-[1.9] font-body animate-word-appear" style={{ animationDelay: '0.1s' }}>{ku.line1}</p>
-          <p className="text-[15px] text-ink leading-[1.9] font-body pl-3 animate-word-appear" style={{ animationDelay: '0.2s' }}>{ku.line2}</p>
-          <p className="text-[15px] text-ink leading-[1.9] font-body animate-word-appear" style={{ animationDelay: '0.3s' }}>{ku.line3}</p>
+      {/* Poem — sticky note */}
+      <div className="py-3 mb-3 flex justify-center">
+        <div
+          className="relative"
+          style={{
+            width: '220px',
+            minHeight: '130px',
+            backgroundColor: ku.note_color || '#FFE082',
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(0,0,0,0.06) 24px)',
+            backgroundSize: '100% 24px',
+            backgroundPosition: '0 28px',
+            borderRadius: '2px',
+            transform: 'rotate(1deg)',
+            boxShadow: '2px 4px 14px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08)',
+            padding: '18px 16px 16px',
+          }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-sm" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }} />
+          <div className="flex flex-col gap-4 relative" style={{ zIndex: 1 }}>
+            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.1s' }}>{ku.line1}</p>
+            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.2s' }}>{ku.line2}</p>
+            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.3s' }}>{ku.line3}</p>
+          </div>
+          {ku.sketch_url && (
+            <img
+              src={ku.sketch_url}
+              alt=""
+              className="absolute inset-0 w-full h-full rounded-sm pointer-events-none"
+              style={{ objectFit: 'cover', mixBlendMode: 'multiply', zIndex: 0 }}
+            />
+          )}
         </div>
-        <div className="vine-divider mt-4" />
       </div>
 
       {/* Hashtags */}
@@ -205,14 +229,6 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
         </div>
         <button onClick={() => setShowShare(true)} className="text-xs text-ink-ghost hover:text-ink-muted transition-colors">↗ share</button>
       </div>
-
-      {/* Sketch */}
-      {ku.sketch_url && (
-        <div className="mt-3 pt-3">
-          <div className="vine-divider mb-3" />
-          <img src={ku.sketch_url} alt="sketch" className="w-full rounded-xl" />
-        </div>
-      )}
 
       {/* Report */}
       {showReport && (

@@ -6,6 +6,17 @@
    KU — Woody Cafe & Nature Theme
    ═══════════════════════════════════════════ */
 
+@keyframes penReveal {
+  0%   { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0%   0 0); }
+}
+
+@keyframes penTraverse {
+  0%   { left: 0%;   opacity: 1; }
+  85%  { left: 90%;  opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
