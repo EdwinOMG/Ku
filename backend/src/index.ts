@@ -24,7 +24,8 @@ const PORT = process.env.PORT || 3000
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://ku-three.vercel.app'
+    'https://ku-three.vercel.app',
+    'ku-git-dev-edwindoescoding.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
