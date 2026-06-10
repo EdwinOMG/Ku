@@ -9,13 +9,13 @@ export const createNotification = async ({
 }: {
   userId: string
   actorId: string
-  type: 'like' | 'comment' | 'follow'
+  type: 'like' | 'comment' | 'follow' | 'daily_prompt' | 'comment_like' | 'reply'
   kuId?: string
   commentId?: string
 }) => {
   if (userId === actorId) return
 
-  await supabase
+  const { error } = await supabase
     .from('notifications')
     .insert({
       user_id: userId,
@@ -24,4 +24,37 @@ export const createNotification = async ({
       ku_id: kuId || null,
       comment_id: commentId || null
     })
+
+  if (error) {
+    console.error('Failed to create notification:', error.message, { userId, actorId, type, kuId, commentId })
+  }
+}
+
+export const broadcastNotification = async ({
+  actorId,
+  type,
+}: {
+  actorId: string
+  type: 'daily_prompt'
+}) => {
+  // Get all users except the actor
+  const { data: users } = await supabase
+    .from('users')
+    .select('id')
+    .neq('id', actorId)
+
+  if (!users || users.length === 0) return
+
+  const rows = users.map(u => ({
+    user_id: u.id,
+    actor_id: actorId,
+    type,
+    ku_id: null,
+    comment_id: null
+  }))
+
+  const { error } = await supabase.from('notifications').insert(rows)
+  if (error) {
+    console.error('Failed to broadcast notification:', error.message)
+  }
 }

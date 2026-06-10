@@ -1,8 +1,10 @@
 import { Response } from 'express'
 import { AuthRequest } from '../types'
 import { supabase } from '../lib/supabase'
+import { broadcastNotification } from '../lib/notify'
 
 export const setDailyPrompt = async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id
   const { prompt } = req.body
 
   if (!prompt || prompt.trim().length === 0) {
@@ -29,6 +31,9 @@ export const setDailyPrompt = async (req: AuthRequest, res: Response) => {
     .single()
 
   if (error) return res.status(400).json({ error: error.message })
+
+  // Notify all users about the new daily prompt
+  await broadcastNotification({ actorId: userId, type: 'daily_prompt' })
 
   return res.status(201).json({ prompt: data })
 }

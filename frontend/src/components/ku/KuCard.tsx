@@ -18,6 +18,7 @@ interface Ku {
   likeCount?: number
   hashtags?: string[]
   isLiked?: boolean
+  commentCount?: number
 }
 
 interface KuCardProps {
@@ -58,6 +59,9 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
   const [reporting, setReporting] = useState(false)
   const [hashtags, setHashtags] = useState<string[]>(ku.hashtags || [])
   const [likeAnim, setLikeAnim] = useState(false)
+  const [showLikers, setShowLikers] = useState(false)
+  const [likers, setLikers] = useState<{ id: string; username: string; avatar_url?: string }[]>([])
+  const [loadingLikers, setLoadingLikers] = useState(false)
 
   const isOwner = user?.id === ku.user_id
 
@@ -83,6 +87,17 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
         setTimeout(() => setLikeAnim(false), 600)
       }
     } catch (err) { console.error(err) }
+  }
+
+  const handleShowLikers = async () => {
+    if (likeCount === 0) return
+    setShowLikers(true)
+    setLoadingLikers(true)
+    try {
+      const data = await api(`/likes/${ku.id}`, {}, session?.access_token)
+      setLikers(data.likers)
+    } catch (err) { console.error(err) }
+    finally { setLoadingLikers(false) }
   }
 
   const handleDelete = async () => {
@@ -202,7 +217,7 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 relative">
         <button
           onClick={handleLike}
           className={`flex items-center gap-1.5 text-xs transition-all duration-300 group ${liked ? 'text-amber-warm' : 'text-ink-ghost hover:text-ink-muted'}`}
@@ -210,10 +225,45 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
           <span className={`text-sm transition-all duration-300 ${likeAnim ? 'animate-like-burst scale-125' : 'scale-100'} group-hover:scale-110`}>
             {liked ? '♥' : '♡'}
           </span>
-          {likeCount > 0 && <span className={`font-mono text-[11px] transition-all duration-300 ${likeAnim ? 'animate-counter-pulse' : ''}`}>{likeCount}</span>}
+          {likeCount > 0 && (
+            <span
+              onClick={(e) => { e.stopPropagation(); handleShowLikers() }}
+              className={`font-mono text-[11px] transition-all duration-300 cursor-pointer hover:underline ${likeAnim ? 'animate-counter-pulse' : ''}`}
+            >
+              {likeCount}
+            </span>
+          )}
         </button>
+
+        {/* Likers popup */}
+        {showLikers && (
+          <div className="absolute bottom-8 left-0 bg-cafe-card border border-cafe-border rounded-xl shadow-warm-lg z-20 min-w-48 max-h-52 overflow-y-auto animate-scale-in">
+            <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
+              <p className="text-[10px] font-display font-medium text-ink-secondary">liked by</p>
+              <button onClick={() => setShowLikers(false)} className="text-[10px] text-ink-ghost hover:text-ink-muted">✕</button>
+            </div>
+            {loadingLikers ? (
+              <p className="text-[10px] text-ink-ghost px-3 py-2 italic">loading...</p>
+            ) : (
+              likers.map(liker => (
+                <Link key={liker.id} to={`/profile/${liker.username}`} onClick={() => setShowLikers(false)}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-cafe-muted transition-colors">
+                  <div className="w-6 h-6 rounded-full bg-moss-light flex items-center justify-center text-[9px] font-semibold text-moss-deep overflow-hidden ring-1 ring-moss-sage/30">
+                    {liker.avatar_url
+                      ? <img src={liker.avatar_url} alt={liker.username} className="w-full h-full object-cover" />
+                      : liker.username[0].toUpperCase()
+                    }
+                  </div>
+                  <span className="text-xs text-ink font-display">{liker.username}</span>
+                </Link>
+              ))
+            )}
+          </div>
+        )}
         <Link to={`/ku/${ku.id}`} className="flex items-center gap-1.5 text-xs text-ink-ghost hover:text-ink-muted transition-all duration-300 group">
-          <span className="text-sm group-hover:animate-wiggle">◎</span> <span className="group-hover:tracking-wide transition-all duration-300">comment</span>
+          <span className="text-sm group-hover:animate-wiggle">◎</span>
+          <span className="group-hover:tracking-wide transition-all duration-300">comment</span>
+          {(ku.commentCount ?? 0) > 0 && <span className="font-mono text-[11px]">{ku.commentCount}</span>}
         </Link>
         <div className="relative ml-auto">
           <button onClick={handleCollect} className="text-xs text-ink-ghost hover:text-ink-muted transition-all duration-300 hover:tracking-wide">⊕ collect</button>

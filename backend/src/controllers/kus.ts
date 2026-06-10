@@ -13,6 +13,65 @@ const validateKu = (line1: string, line2: string, line3: string) => {
   return null
 }
 
+const enrichKusWithLikes = async (kus: any[], userId?: string) => {
+  if (!kus || kus.length === 0) return []
+
+  const kuIds = kus.map(k => k.id)
+
+  // Get like counts for all kus
+  const { data: likeCounts } = await supabase
+    .from('likes')
+    .select('ku_id')
+    .in('ku_id', kuIds)
+
+  const countMap: Record<string, number> = {}
+  likeCounts?.forEach(l => {
+    countMap[l.ku_id] = (countMap[l.ku_id] || 0) + 1
+  })
+
+  // Get user's likes if logged in
+  let userLikes: Set<string> = new Set()
+  if (userId) {
+    const { data: liked } = await supabase
+      .from('likes')
+      .select('ku_id')
+      .eq('user_id', userId)
+      .in('ku_id', kuIds)
+    liked?.forEach(l => userLikes.add(l.ku_id))
+  }
+
+  // Get hashtags
+  const { data: hashtagData } = await supabase
+    .from('ku_hashtags')
+    .select('ku_id, hashtags(name)')
+    .in('ku_id', kuIds)
+
+  const hashtagMap: Record<string, string[]> = {}
+  hashtagData?.forEach(h => {
+    if (!hashtagMap[h.ku_id]) hashtagMap[h.ku_id] = []
+    hashtagMap[h.ku_id].push((h.hashtags as any).name)
+  })
+
+  // Get comment counts
+  const { data: commentCounts } = await supabase
+    .from('comments')
+    .select('ku_id')
+    .in('ku_id', kuIds)
+
+  const commentCountMap: Record<string, number> = {}
+  commentCounts?.forEach(c => {
+    commentCountMap[c.ku_id] = (commentCountMap[c.ku_id] || 0) + 1
+  })
+
+  return kus.map(ku => ({
+    ...ku,
+    likeCount: countMap[ku.id] || 0,
+    isLiked: userLikes.has(ku.id),
+    hashtags: hashtagMap[ku.id] || [],
+    commentCount: commentCountMap[ku.id] || 0
+  }))
+}
+
 export const createKu = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
   const { line1, line2, line3, visibility, hashtags, is_daily, prompt_id, sketch_url, note_color } = req.body
@@ -139,10 +198,13 @@ export const getHomeFeed = async (req: AuthRequest, res: Response) => {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, limit)
 
-  return res.status(200).json({ kus: allKus })
+  const enriched = await enrichKusWithLikes(allKus, userId)
+
+  return res.status(200).json({ kus: enriched })
 }
 
 export const getExploreFeed = async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id
   const { page = 1 } = req.query
   const limit = 20
   const offset = (Number(page) - 1) * limit
@@ -156,10 +218,13 @@ export const getExploreFeed = async (req: AuthRequest, res: Response) => {
 
   if (error) return res.status(400).json({ error: error.message })
 
-  return res.status(200).json({ kus })
+  const enriched = await enrichKusWithLikes(kus || [], userId)
+
+  return res.status(200).json({ kus: enriched })
 }
 
 export const getDailyFeed = async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id
   const { page = 1 } = req.query
   const limit = 20
   const offset = (Number(page) - 1) * limit
@@ -185,7 +250,9 @@ export const getDailyFeed = async (req: AuthRequest, res: Response) => {
 
   if (error) return res.status(400).json({ error: error.message })
 
-  return res.status(200).json({ prompt, kus })
+  const enriched = await enrichKusWithLikes(kus || [], userId)
+
+  return res.status(200).json({ prompt, kus: enriched })
 }
 
 export const getKu = async (req: AuthRequest, res: Response) => {
@@ -226,6 +293,24 @@ export const getKu = async (req: AuthRequest, res: Response) => {
     .select('*', { count: 'exact', head: true })
     .eq('ku_id', id)
 
+  // Check if current user liked
+  let isLiked = false
+  if (userId) {
+    const { data: likeRow } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('ku_id', id)
+      .single()
+    isLiked = !!likeRow
+  }
+
+  // Get comment count
+  const { count: commentCount } = await supabase
+    .from('comments')
+    .select('*', { count: 'exact', head: true })
+    .eq('ku_id', id)
+
   // Get hashtags
   const { data: hashtags } = await supabase
     .from('ku_hashtags')
@@ -236,6 +321,8 @@ export const getKu = async (req: AuthRequest, res: Response) => {
     ku: {
       ...ku,
       likeCount,
+      isLiked,
+      commentCount,
       hashtags: hashtags?.map(h => (h.hashtags as any).name) || []
     }
   })

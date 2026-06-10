@@ -11,7 +11,7 @@ interface Ku {
   id: string; user_id: string; line1: string; line2: string; line3: string
   visibility: string; sketch_url?: string; created_at: string
   users: { username: string; avatar_url?: string }
-  likeCount?: number; hashtags?: string[]; isLiked?: boolean
+  likeCount?: number; hashtags?: string[]; isLiked?: boolean; commentCount?: number
 }
 
 const AMBIENT_WORDS = ['stillness', 'bloom', 'whisper', 'drift', 'wonder', 'gentle', 'dusk', 'petals', 'rain']
