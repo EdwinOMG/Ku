@@ -31,6 +31,18 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
   const isOwner = requesterId === profile.id
 
+  // Check if requester follows this user
+  let isFollowing = false
+  if (requesterId && !isOwner) {
+    const { data: followRow } = await supabase
+      .from('follows')
+      .select('id')
+      .eq('follower_id', requesterId)
+      .eq('following_id', profile.id)
+      .single()
+    isFollowing = !!followRow
+  }
+
   // Get follower/following counts
   const { count: followerCount } = await supabase
     .from('follows')
@@ -93,15 +105,67 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
   const { data: collections } = await collectionsQuery
 
+  // Enrich kus with like counts and isLiked
+  let enrichedKus = kus || []
+  if (enrichedKus.length > 0) {
+    const kuIds = enrichedKus.map(k => k.id)
+
+    const { data: likeCounts } = await supabase
+      .from('likes')
+      .select('ku_id')
+      .in('ku_id', kuIds)
+
+    const countMap: Record<string, number> = {}
+    likeCounts?.forEach(l => { countMap[l.ku_id] = (countMap[l.ku_id] || 0) + 1 })
+
+    let userLikes: Set<string> = new Set()
+    if (requesterId) {
+      const { data: liked } = await supabase
+        .from('likes')
+        .select('ku_id')
+        .eq('user_id', requesterId)
+        .in('ku_id', kuIds)
+      liked?.forEach(l => userLikes.add(l.ku_id))
+    }
+
+    const { data: hashtagData } = await supabase
+      .from('ku_hashtags')
+      .select('ku_id, hashtags(name)')
+      .in('ku_id', kuIds)
+
+    const hashtagMap: Record<string, string[]> = {}
+    hashtagData?.forEach(h => {
+      if (!hashtagMap[h.ku_id]) hashtagMap[h.ku_id] = []
+      hashtagMap[h.ku_id].push((h.hashtags as any).name)
+    })
+
+    const { data: commentCounts } = await supabase
+      .from('comments')
+      .select('ku_id')
+      .in('ku_id', kuIds)
+
+    const commentCountMap: Record<string, number> = {}
+    commentCounts?.forEach(c => { commentCountMap[c.ku_id] = (commentCountMap[c.ku_id] || 0) + 1 })
+
+    enrichedKus = enrichedKus.map(ku => ({
+      ...ku,
+      likeCount: countMap[ku.id] || 0,
+      isLiked: userLikes.has(ku.id),
+      hashtags: hashtagMap[ku.id] || [],
+      commentCount: commentCountMap[ku.id] || 0
+    }))
+  }
+
   return res.status(200).json({
     profile: {
       ...profile,
       followerCount,
       followingCount,
       isOwner,
-      isFriend
+      isFriend,
+      isFollowing
     },
-    kus,
+    kus: enrichedKus,
     openWrites: isOwner || isFriend ? openWrites : openWrites,
     collections
   })

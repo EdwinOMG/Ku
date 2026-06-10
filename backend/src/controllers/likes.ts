@@ -46,3 +46,19 @@ export const unlikeKu = async (req: AuthRequest, res: Response) => {
 
   return res.status(200).json({ message: 'Unliked' })
 }
+
+export const getLikers = async (req: AuthRequest, res: Response) => {
+  const { kuId } = req.params
+
+  const { data, error } = await supabase
+    .from('likes')
+    .select('created_at, users(id, username, avatar_url)')
+    .eq('ku_id', kuId)
+    .order('created_at', { ascending: false })
+
+  if (error) return res.status(400).json({ error: error.message })
+
+  return res.status(200).json({
+    likers: data?.map(l => (l.users as any)) || []
+  })
+}

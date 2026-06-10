@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
@@ -36,14 +36,10 @@ export default function Settings() {
     try {
       let finalAvatarUrl = avatarUrl
       if (avatarUrl.startsWith('data:')) {
-        const res = await fetch(avatarUrl)
-        const blob = await res.blob()
-        const ext = blob.type === 'image/png' ? 'png' : 'jpg'
-        const fileName = `${user.id}/avatar.${ext}`
-        const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, blob, { contentType: blob.type, upsert: true })
-        if (uploadError) throw new Error(uploadError.message)
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName)
-        finalAvatarUrl = urlData.publicUrl
+        const base64 = avatarUrl.split(',')[1]
+        const fileType = avatarUrl.includes('image/png') ? 'png' : 'jpg'
+        const uploadRes = await api('/users/avatar', { method: 'POST', body: JSON.stringify({ base64, fileType }) }, session.access_token)
+        finalAvatarUrl = uploadRes.avatar_url
       }
       await api('/users/profile', { method: 'PUT', body: JSON.stringify({ bio, avatar_url: finalAvatarUrl }) }, session.access_token)
       setAvatarUrl(finalAvatarUrl); setPreviewUrl(finalAvatarUrl); setSuccess(true)
@@ -70,9 +66,6 @@ export default function Settings() {
             </div>
             <div className="flex flex-col gap-1">
               <p className="text-sm font-display font-semibold text-ink">{username}</p>
-              <Link to={`/profile/${username}`} className="text-xs text-amber-warm hover:text-amber-mid transition-colors font-display">
-                view your profile →
-              </Link>
               <button onClick={() => setShowAvatarPicker(s => !s)}
                 className="text-xs text-ink-muted text-left hover:text-ink transition-colors">
                 {showAvatarPicker ? 'cancel' : 'change picture'}
