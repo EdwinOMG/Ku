@@ -15,7 +15,7 @@ type Tab = 'kus' | 'writes' | 'collections'
 
 export default function Profile() {
   const { username } = useParams<{ username: string }>()
-  const { session} = useAuth()
+  const { session, user } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [kus, setKus] = useState<Ku[]>([])
@@ -185,7 +185,7 @@ export default function Profile() {
               <p className="text-sm font-display font-semibold text-ink">followers</p>
               <button onClick={() => setShowFollowers(false)} className="text-ink-ghost hover:text-ink text-sm">✕</button>
             </div>
-            <div className="overflow-y-auto max-h-[55vh] p-3 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="overflow-y-auto max-h-[40vh] sm:max-h-[55vh] p-3 pb-16 sm:pb-3 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
               {loadingList ? (
                 <p className="text-center text-ink-ghost text-xs py-8 italic font-display">loading...</p>
               ) : followerList.length === 0 ? (
@@ -224,7 +224,7 @@ export default function Profile() {
               <p className="text-sm font-display font-semibold text-ink">following</p>
               <button onClick={() => setShowFollowing(false)} className="text-ink-ghost hover:text-ink text-sm">✕</button>
             </div>
-            <div className="overflow-y-auto max-h-[55vh] p-3 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="overflow-y-auto max-h-[40vh] sm:max-h-[55vh] p-3 pb-16 sm:pb-3 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
               {loadingList ? (
                 <p className="text-center text-ink-ghost text-xs py-8 italic font-display">loading...</p>
               ) : followingList.length === 0 ? (
