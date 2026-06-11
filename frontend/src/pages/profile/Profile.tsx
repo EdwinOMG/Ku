@@ -15,7 +15,7 @@ type Tab = 'kus' | 'writes' | 'collections'
 
 export default function Profile() {
   const { username } = useParams<{ username: string }>()
-  const { session, user } = useAuth()
+  const { session} = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [kus, setKus] = useState<Ku[]>([])
