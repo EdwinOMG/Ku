@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
-import { supabase } from '../lib/supabase'
 import TopBar from '../components/layout/TopBar'
 import { getRandomPrompt } from '../lib/explorePrompts'
 
@@ -33,15 +32,6 @@ const DRAW_COLORS = [
 
 function countWords(text: string) {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length
-}
-
-function dataURLtoBlob(dataUrl: string): Blob {
-  const [header, data] = dataUrl.split(',')
-  const mime = header.match(/:(.*?);/)![1]
-  const binary = atob(data)
-  const array = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i)
-  return new Blob([array], { type: mime })
 }
 
 /* ─── Floating Ink Particles ─── */
@@ -194,6 +184,16 @@ function StickyNote({
         style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}
       />
 
+      {/* Draw canvas overlay — rendered before text so DOM order + z-index both guarantee text stays on top */}
+      {isDrawable && canvasRef && (
+        <DrawCanvas
+          canvasRef={canvasRef}
+          penColor={penColor ?? '#2A261F'}
+          penSize={penSize ?? 2}
+          isErasing={isErasing ?? false}
+        />
+      )}
+
       {/* Poem lines */}
       <div className="flex flex-col gap-6 relative" style={{ zIndex: 2, pointerEvents: 'none' }}>
         {[0, 1, 2].map(i => (
@@ -240,15 +240,6 @@ function StickyNote({
         ))}
       </div>
 
-      {/* Draw canvas overlay */}
-      {isDrawable && canvasRef && (
-        <DrawCanvas
-          canvasRef={canvasRef}
-          penColor={penColor ?? '#2A261F'}
-          penSize={penSize ?? 2}
-          isErasing={isErasing ?? false}
-        />
-      )}
     </div>
   )
 }
@@ -458,37 +449,15 @@ export default function Compose() {
     }
   }
 
-  const uploadDrawing = (): Promise<string | null> => {
-    return new Promise((resolve) => {
-      try {
-        const canvas = canvasRef.current
-        if (!canvas || !session) return resolve(null)
-        if (canvas.width === 0 || canvas.height === 0) return resolve(null)
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return resolve(null)
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-        const hasContent = imageData.data.some((v, i) => i % 4 === 3 && v > 0)
-        if (!hasContent) return resolve(null)
-        const dataUrl = canvas.toDataURL('image/png')
-        const blob = dataURLtoBlob(dataUrl)
-        const fileName = `${session.user.id}/${Date.now()}_sketch.png`
-        const timer = setTimeout(() => resolve(null), 8000)
-        supabase.storage
-          .from('sketches')
-          .upload(fileName, blob, { contentType: 'image/png', upsert: false })
-          .then(({ error: uploadError }) => {
-            clearTimeout(timer)
-            if (uploadError) return resolve(null)
-            resolve(supabase.storage.from('sketches').getPublicUrl(fileName).data.publicUrl)
-          })
-          .catch(() => {
-            clearTimeout(timer)
-            resolve(null)
-          })
-      } catch {
-        resolve(null)
-      }
-    })
+  const getSketchData = (): string | null => {
+    const canvas = canvasRef.current
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return null
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const hasContent = imageData.data.some((v, i) => i % 4 === 3 && v > 0)
+    if (!hasContent) return null
+    return canvas.toDataURL('image/png')
   }
 
   const handleSubmit = async () => {
@@ -500,7 +469,6 @@ export default function Compose() {
       .filter(t => t.length > 0)
     setLoading(true)
     try {
-      const sketchUrl = await uploadDrawing()
       await api('/kus', {
         method: 'POST',
         body: JSON.stringify({
@@ -509,7 +477,7 @@ export default function Compose() {
           line3: committedLines[2],
           visibility,
           hashtags: parsedTags,
-          sketch_url: sketchUrl,
+          sketch_data: getSketchData(),
           note_color: noteColor,
           is_daily: promptState?.isDaily || false,
           prompt_id: promptState?.promptId || null,

@@ -176,11 +176,6 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
           }}
         >
           <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-sm" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }} />
-          <div className="flex flex-col gap-4 relative" style={{ zIndex: 1 }}>
-            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.1s' }}>{ku.line1}</p>
-            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.2s' }}>{ku.line2}</p>
-            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.3s' }}>{ku.line3}</p>
-          </div>
           {ku.sketch_url && (
             <img
               src={ku.sketch_url}
@@ -189,6 +184,11 @@ export default function KuCard({ ku, onDelete }: KuCardProps) {
               style={{ objectFit: 'cover', mixBlendMode: 'multiply', zIndex: 0 }}
             />
           )}
+          <div className="flex flex-col gap-4 relative" style={{ zIndex: 1 }}>
+            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.1s' }}>{ku.line1}</p>
+            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.2s' }}>{ku.line2}</p>
+            <p className="font-body text-sm leading-5 animate-word-appear" style={{ color: '#2A261F', animationDelay: '0.3s' }}>{ku.line3}</p>
+          </div>
         </div>
       </div>
 

@@ -15,13 +15,33 @@ const validateKu = (line1: string, line2: string, line3: string) => {
 
 export const createKu = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
-  const { line1, line2, line3, visibility, hashtags, is_daily, prompt_id, sketch_url, note_color } = req.body
+  const { line1, line2, line3, visibility, hashtags, is_daily, prompt_id, sketch_data, note_color } = req.body
 
   const validationError = validateKu(line1, line2, line3)
   if (validationError) return res.status(400).json({ error: validationError })
 
   if (!['public', 'friends', 'private'].includes(visibility)) {
     return res.status(400).json({ error: 'Invalid visibility' })
+  }
+
+  // Upload sketch from backend using service key (bypasses storage RLS)
+  let sketch_url: string | null = null
+  if (sketch_data && typeof sketch_data === 'string') {
+    try {
+      const base64 = sketch_data.replace(/^data:image\/[^;]+;base64,/, '')
+      const buffer = Buffer.from(base64, 'base64')
+      const fileName = `${userId}/${Date.now()}_sketch.png`
+      const { error: uploadError } = await supabase.storage
+        .from('sketches')
+        .upload(fileName, buffer, { contentType: 'image/png', upsert: false })
+      if (!uploadError) {
+        sketch_url = supabase.storage.from('sketches').getPublicUrl(fileName).data.publicUrl
+      } else {
+        console.error('[sketch upload]', uploadError.message)
+      }
+    } catch (e) {
+      console.error('[sketch upload] exception:', e)
+    }
   }
 
   // Create the ku
@@ -35,7 +55,7 @@ export const createKu = async (req: AuthRequest, res: Response) => {
       visibility,
       is_daily: is_daily || false,
       prompt_id: prompt_id || null,
-      sketch_url: sketch_url || null,
+      sketch_url,
       note_color: note_color || '#FFE082'
     })
     .select()
