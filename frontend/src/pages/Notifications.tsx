@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
+import { useNotifications } from '../context/NotificationContext'
 import Layout from '../components/layout/Layout'
 import TopBar from '../components/layout/TopBar'
 
@@ -34,6 +35,7 @@ export default function Notifications() {
   const [loading, setLoading] = useState(true)
   const [followingBack, setFollowingBack] = useState<Set<string>>(new Set())
   const [followLoading, setFollowLoading] = useState<Set<string>>(new Set())
+  const { clearCount } = useNotifications()
 
   useEffect(() => {
     if (!session) return
@@ -41,7 +43,6 @@ export default function Notifications() {
       try {
         const data = await api('/notifications', {}, session.access_token)
         setNotifications(data.notifications)
-        // Initialize follow-back state from API
         const alreadyFollowing = new Set<string>()
         data.notifications.forEach((n: Notification) => {
           if (n.type === 'follow' && n.isFollowingBack) {
@@ -50,6 +51,7 @@ export default function Notifications() {
         })
         setFollowingBack(alreadyFollowing)
         await api('/notifications/read', { method: 'PUT' }, session.access_token)
+        clearCount()
       } catch (err) { console.error(err) }
       finally { setLoading(false) }
     }

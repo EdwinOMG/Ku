@@ -37,7 +37,8 @@ export default function Settings() {
       let finalAvatarUrl = avatarUrl
       if (avatarUrl.startsWith('data:')) {
         const base64 = avatarUrl.split(',')[1]
-        const fileType = avatarUrl.includes('image/png') ? 'png' : 'jpg'
+        const mimeMatch = avatarUrl.match(/data:image\/(\w+);/)
+        const fileType = mimeMatch?.[1] === 'png' ? 'png' : mimeMatch?.[1] === 'webp' ? 'webp' : 'jpeg'
         const uploadRes = await api('/users/avatar', { method: 'POST', body: JSON.stringify({ base64, fileType }) }, session.access_token)
         finalAvatarUrl = uploadRes.avatar_url
       }

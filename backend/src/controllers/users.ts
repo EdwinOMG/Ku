@@ -208,13 +208,27 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Image data required' })
   }
 
+  const mimeTypes: Record<string, string> = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp', jpg: 'image/jpeg' }
+  const contentType = mimeTypes[fileType] || 'image/jpeg'
+  const ext = fileType === 'jpg' ? 'jpeg' : fileType
+
   const buffer = Buffer.from(base64, 'base64')
-  const fileName = `${userId}/avatar.${fileType}`
+  const fileName = `${userId}/avatar.${ext}`
+
+  // Remove any existing avatar files first to avoid conflicts when extension changes
+  const { data: existingFiles } = await supabase.storage
+    .from('avatars')
+    .list(userId)
+
+  if (existingFiles && existingFiles.length > 0) {
+    const filesToDelete = existingFiles.map(f => `${userId}/${f.name}`)
+    await supabase.storage.from('avatars').remove(filesToDelete)
+  }
 
   const { error: uploadError } = await supabase.storage
     .from('avatars')
     .upload(fileName, buffer, {
-      contentType: `image/${fileType}`,
+      contentType,
       upsert: true
     })
 
@@ -224,12 +238,14 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
     .from('avatars')
     .getPublicUrl(fileName)
 
+  const avatarUrlWithCacheBust = `${urlData.publicUrl}?t=${Date.now()}`
+
   const { error: updateError } = await supabase
     .from('users')
-    .update({ avatar_url: urlData.publicUrl })
+    .update({ avatar_url: avatarUrlWithCacheBust })
     .eq('id', userId)
 
   if (updateError) return res.status(400).json({ error: updateError.message })
 
-  return res.status(200).json({ avatar_url: urlData.publicUrl })
+  return res.status(200).json({ avatar_url: avatarUrlWithCacheBust })
 }

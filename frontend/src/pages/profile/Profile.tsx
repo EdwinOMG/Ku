@@ -15,7 +15,7 @@ type Tab = 'kus' | 'writes' | 'collections'
 
 export default function Profile() {
   const { username } = useParams<{ username: string }>()
-  const { session } = useAuth()
+  const { session, user } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [kus, setKus] = useState<Ku[]>([])
@@ -180,12 +180,12 @@ export default function Profile() {
       {/* Followers modal */}
       {showFollowers && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center animate-fade-in" onClick={() => setShowFollowers(false)}>
-          <div className="bg-cafe-card w-full max-w-md max-h-[70vh] rounded-t-2xl sm:rounded-2xl overflow-hidden animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="bg-cafe-card w-full sm:max-w-md max-h-[70vh] rounded-t-2xl sm:rounded-2xl overflow-hidden animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-cafe-border">
               <p className="text-sm font-display font-semibold text-ink">followers</p>
               <button onClick={() => setShowFollowers(false)} className="text-ink-ghost hover:text-ink text-sm">✕</button>
             </div>
-            <div className="overflow-y-auto max-h-[55vh] p-3">
+            <div className="overflow-y-auto max-h-[55vh] p-3 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
               {loadingList ? (
                 <p className="text-center text-ink-ghost text-xs py-8 italic font-display">loading...</p>
               ) : followerList.length === 0 ? (
@@ -219,12 +219,12 @@ export default function Profile() {
       {/* Following modal */}
       {showFollowing && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center animate-fade-in" onClick={() => setShowFollowing(false)}>
-          <div className="bg-cafe-card w-full max-w-md max-h-[70vh] rounded-t-2xl sm:rounded-2xl overflow-hidden animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="bg-cafe-card w-full sm:max-w-md max-h-[70vh] rounded-t-2xl sm:rounded-2xl overflow-hidden animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-cafe-border">
               <p className="text-sm font-display font-semibold text-ink">following</p>
               <button onClick={() => setShowFollowing(false)} className="text-ink-ghost hover:text-ink text-sm">✕</button>
             </div>
-            <div className="overflow-y-auto max-h-[55vh] p-3">
+            <div className="overflow-y-auto max-h-[55vh] p-3 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
               {loadingList ? (
                 <p className="text-center text-ink-ghost text-xs py-8 italic font-display">loading...</p>
               ) : followingList.length === 0 ? (

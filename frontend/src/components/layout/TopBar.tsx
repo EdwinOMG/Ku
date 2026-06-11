@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { api } from '../../lib/api'
+import { useNotifications } from '../../context/NotificationContext'
 
 interface TopBarProps {
   title?: string
@@ -12,23 +11,7 @@ interface TopBarProps {
 export default function TopBar({ title = 'ku', showBack = false, right }: TopBarProps) {
   const navigate = useNavigate()
   const { session } = useAuth()
-  const [unreadCount, setUnreadCount] = useState(0)
-
-  useEffect(() => {
-    if (!session) return
-    const fetchUnread = async () => {
-      try {
-        const data = await api('/notifications/unread', {}, session.access_token)
-        setUnreadCount(data.count)
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchUnread()
-    // Poll every 30s
-    const interval = setInterval(fetchUnread, 30000)
-    return () => clearInterval(interval)
-  }, [session])
+  const { unreadCount } = useNotifications()
 
   return (
     <div className="sticky top-0 z-20 glass border-b border-cafe-border/50 px-4 py-3 flex items-center justify-between animate-fade-in-down">
@@ -64,7 +47,6 @@ export default function TopBar({ title = 'ku', showBack = false, right }: TopBar
                 strokeLinejoin="round"
               />
               <path d="M9.5 17.3C9.5 18.7 10.6 19.8 12 19.8C13.4 19.8 14.5 18.7 14.5 17.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              {/* Little leaf accent on the bell */}
               <path d="M16.5 4.5C17.2 3.8 18.5 3.5 19 4C19.5 4.5 19.2 5.8 18.5 6.5C17.8 7.2 16.5 6.2 16.5 4.5Z" fill="currentColor" opacity="0.4" />
             </svg>
             {unreadCount > 0 && (

@@ -5,6 +5,29 @@ import { supabase } from '../lib/supabase'
 export const getNotifications = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id
 
+  // Clean up notifications older than 30 days
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  await supabase
+    .from('notifications')
+    .delete()
+    .eq('user_id', userId)
+    .lt('created_at', thirtyDaysAgo)
+
+  // Cap at 50 notifications — delete oldest beyond the limit
+  const { data: allIds } = await supabase
+    .from('notifications')
+    .select('id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (allIds && allIds.length > 50) {
+    const idsToDelete = allIds.slice(50).map(n => n.id)
+    await supabase
+      .from('notifications')
+      .delete()
+      .in('id', idsToDelete)
+  }
+
   const { data: notifications, error } = await supabase
     .from('notifications')
     .select(`

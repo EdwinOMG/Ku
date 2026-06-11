@@ -22,28 +22,17 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(cors({
-  origin: function(origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://ku-three.vercel.app',
-      'https://ku-git-dev-edwindoescoding.vercel.app',
-      process.env.FRONTEND_URL
-    ].filter(Boolean)
-
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
+  origin: [
+    'http://localhost:5173',
+    'https://ku-three.vercel.app',
+    'https://ku-git-dev-edwindoescoding.vercel.app'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 
 app.use('/auth', authRoutes)
 app.use('/users', userRoutes)
